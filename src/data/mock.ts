@@ -1,4 +1,11 @@
+export type Segment =
+  | 'ประถม'
+  | 'ม.ต้น'
+  | 'ม.ปลาย / TCAS'
+  | 'International / Bilingual / GED'
+
 export type StudentProfile = {
+  segment: Segment
   cohort: string
   goal: string
   subjects: string[]
@@ -9,6 +16,7 @@ export type StudentProfile = {
 }
 
 export const defaultProfile: StudentProfile = {
+  segment: 'ม.ปลาย / TCAS',
   cohort: 'Dek70',
   goal: 'วิศวะ',
   subjects: ['Physics'],
@@ -19,9 +27,14 @@ export const defaultProfile: StudentProfile = {
 }
 
 export const onboarding = [
-  { key: 'cohort', title: 'คุณเป็นรุ่นไหน?', options: ['Dek70', 'Dek71'] },
-  { key: 'goal', title: 'ตอนนี้อยากไปทางไหนมากที่สุด?', options: ['แพทย์', 'วิศวะ', 'บริหาร', 'สายศิลป์', 'ยังไม่แน่ใจ'] },
-  { key: 'subjects', title: 'วิชาไหนที่กังวล?', options: ['Physics', 'Chemistry', 'Biology', 'Math', 'English'], multi: true },
+  {
+    key: 'segment',
+    title: 'ตอนนี้อยู่ในช่วงไหน?',
+    options: ['ประถม', 'ม.ต้น', 'ม.ปลาย / TCAS', 'International / Bilingual / GED'],
+  },
+  { key: 'cohort', title: 'คุณเป็นรุ่นไหน?', options: ['P5–P6', 'M1–M3', 'Dek70', 'Dek71', 'International / GED'] },
+  { key: 'goal', title: 'ตอนนี้อยากไปทางไหนมากที่สุด?', options: ['พื้นฐานแน่นขึ้น', 'สอบเข้า', 'แพทย์', 'วิศวะ', 'บริหาร', 'สายศิลป์', 'International pathway', 'ยังไม่แน่ใจ'] },
+  { key: 'subjects', title: 'วิชาไหนที่กังวล?', options: ['Math', 'Science', 'Physics', 'Chemistry', 'Biology', 'English'], multi: true },
   { key: 'level', title: 'ระดับปัจจุบันของคุณ?', options: ['Beginning', 'Developing', 'Confident'] },
   { key: 'hours', title: 'มีเวลาเรียนต่อสัปดาห์ประมาณเท่าไร?', options: ['2–4 ชั่วโมง', '5–7 ชั่วโมง', '8+ ชั่วโมง'] },
   { key: 'budget', title: 'งบประมาณที่วางไว้?', options: ['ต่ำกว่า 3,000', '3,000–8,000', '8,000+'] },
@@ -67,9 +80,69 @@ export const diagnosticQuestions = [
   },
 ]
 
-export const portfolioSignals = [
-  ['Physics Foundation', '432', '46%', '73%', '+11 pts', 'Low', 'GROW'],
-  ['Mechanics Intensive', '210', '39%', '69%', '+8 pts', 'High overlap', 'MERGE'],
-  ['Legacy Full Physics', '61', '18%', '41%', '+3 pts', 'High', 'HARVEST'],
-  ['Old Exam Pack', '22', '8%', '30%', '+1 pt', 'Duplicate', 'EXIT'],
+export const weeklyPulse = [
+  ['Active learners', '18.4K', '+6.2% WoW'],
+  ['New enrollments', '2,486', '+9.1% WoW'],
+  ['Diagnostic completion', '81%', '+3.4 pp'],
+  ['Repeat purchase', '27%', '+1.8 pp'],
+  ['Branch-assisted conversion', '38%', '+4.0 pp'],
+  ['Course completion', '64%', '-0.7 pp'],
+]
+
+export const segmentMix = [
+  ['ประถม', 18],
+  ['ม.ต้น', 24],
+  ['ม.ปลาย / TCAS', 46],
+  ['International / Bilingual / GED', 12],
+] as const
+
+export const topPacks = [
+  { segment: 'ประถม', name: 'Math Foundation P5–P6', enrollments: 482, conversion: 44, completion: 76, repeat: 31, margin: 58, action: 'GROW' },
+  { segment: 'ประถม', name: 'Science Explorer', enrollments: 328, conversion: 39, completion: 72, repeat: 28, margin: 54, action: 'PROMOTE' },
+  { segment: 'ม.ต้น', name: 'M2 Math Core', enrollments: 615, conversion: 48, completion: 69, repeat: 34, margin: 61, action: 'GROW' },
+  { segment: 'ม.ต้น', name: 'M3 Science Exam Pack', enrollments: 492, conversion: 43, completion: 66, repeat: 29, margin: 57, action: 'REPACKAGE' },
+  { segment: 'ม.ปลาย / TCAS', name: 'Physics Foundation', enrollments: 932, conversion: 51, completion: 73, repeat: 37, margin: 63, action: 'GROW' },
+  { segment: 'ม.ปลาย / TCAS', name: 'Mechanics Intensive', enrollments: 514, conversion: 42, completion: 68, repeat: 26, margin: 49, action: 'MERGE' },
+  { segment: 'ม.ปลาย / TCAS', name: 'Legacy Full Physics', enrollments: 183, conversion: 18, completion: 41, repeat: 11, margin: 36, action: 'HARVEST' },
+  { segment: 'International / Bilingual / GED', name: 'Thai Academic Bridge', enrollments: 246, conversion: 36, completion: 71, repeat: 24, margin: 56, action: 'TEST' },
+  { segment: 'International / Bilingual / GED', name: 'TCAS Navigation for GED', enrollments: 168, conversion: 32, completion: 74, repeat: 22, margin: 52, action: 'PROMOTE' },
+] as const
+
+export const advisorCases = [
+  {
+    name: 'Pim · Dek70',
+    segment: 'ม.ปลาย / TCAS',
+    goal: 'วิศวะ',
+    signal: 'Mechanics gap · Hybrid preference',
+    path: 'Physics Foundation → Core → Mock',
+    next: 'โทรอธิบาย path + เปรียบเทียบ CORE vs PLUS',
+    priority: 'HIGH',
+  },
+  {
+    name: 'Nene · P6',
+    segment: 'ประถม',
+    goal: 'พื้นฐานแน่นขึ้น',
+    signal: 'Math confidence ต่ำ · Parent-led',
+    path: 'Math Foundation → Weekly practice',
+    next: 'ส่ง parent summary + นัด diagnostic review',
+    priority: 'MED',
+  },
+  {
+    name: 'Beam · M3',
+    segment: 'ม.ต้น',
+    goal: 'สอบเข้า',
+    signal: 'Science strong / Math weak',
+    path: 'Math Core → Exam Pack',
+    next: 'Branch consult: เลือกเวลาเรียนและ mock slot',
+    priority: 'HIGH',
+  },
+  {
+    name: 'Mika · GED',
+    segment: 'International / Bilingual / GED',
+    goal: 'Thai university',
+    signal: 'Needs Thai academic terminology',
+    path: 'Thai Academic Bridge → TCAS navigation',
+    next: 'Advisor explains bridge scope + admission route',
+    priority: 'MED',
+  },
 ]

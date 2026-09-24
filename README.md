@@ -1,46 +1,51 @@
-# The Compass — OnDemand Product Prototype
+# The Compass — Portfolio & Journey Operating System Prototype
 
-A clickable interview prototype that translates the **From Catalog to Compass** product strategy into an end-to-end learner journey.
+An interview prototype that translates the **From Catalog to Compass** strategy into a three-layer operating model.
 
-## Product thesis
+## 1. Learner Journey
+The learner does not browse a giant catalog first. The flow begins with:
+**Segment → Goal → Diagnostic → Recommended Path → Support Level → Outcome → Updated Path**
 
-Instead of asking students to browse a large course catalog, Compass starts from:
+The prototype now supports multiple learner segments:
+- ประถม
+- ม.ต้น
+- ม.ปลาย / TCAS
+- International / Bilingual / GED
 
-**Goal → Diagnostic → Recommended path → Support level → Outcome → Updated path**
+## 2. Advisor Console
+A shared decision layer for branch / advisor / parent-assisted journeys:
+- learner goal and segment
+- gap / signal
+- recommended path
+- next best action
+- advisor interaction as structured data
 
-The same interaction data also feeds an internal portfolio view so a product team can learn which journeys convert, where learners drop off, which modules overlap, and where portfolio actions such as **GROW / MERGE / HARVEST / EXIT** may be worth testing.
+## 3. Portfolio Control Tower
+A weekly operating view for Product / Portfolio leadership:
+- weekly pulse
+- segment mix
+- top packs
+- enrollments
+- conversion
+- completion
+- repeat purchase
+- margin
+- portfolio action queue
+- governance cadence
 
-## Prototype scope
+Prototype portfolio actions include:
+**GROW / MERGE / REPACKAGE / PROMOTE / HARVEST / TEST**
 
-### Student experience
-- Goal-based onboarding
-- Quick diagnostic
-- Personalized learning path
-- Transparent support ladder
-- Adaptive path after mock-result changes
-- Metro vs provincial delivery hypotheses
-
-### PM view
-- Funnel
-- Goal/path demand
-- Portfolio signals
-- Regional delivery behavior
-- Outcome feedback loop
-
-## Important
-
-This is a **prototype for interview discussion**.
-All prices, cohorts, performance values, and portfolio metrics shown in the app are mock data unless explicitly stated otherwise.
+## Data note
+All metrics, prices, learner records and performance values in this app are mock data for prototype discussion only. They are not official OnDemand / LEARN data.
 
 ## Run locally
-
 ```bash
 npm install
 npm run dev
 ```
 
 ## Build
-
 ```bash
 npm run build
 ```
