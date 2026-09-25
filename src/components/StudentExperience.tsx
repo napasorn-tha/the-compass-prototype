@@ -12,8 +12,7 @@ type Profile = {
   stage: LearnerStage
   need: string
   goal: string
-  currentScore: number
-  score: number
+  baselineScore: number | null
   time: string
   supportMode: string
   supportNeed: string
@@ -27,8 +26,7 @@ const defaults: Profile = {
   stage: 'Upper Secondary',
   need: 'TCAS / University',
   goal: 'วิศวะ',
-  currentScore: 58,
-  score: 58,
+  baselineScore: null,
   time: '5–7 ชม./สัปดาห์',
   supportMode: 'Hybrid',
   supportNeed: 'High',
@@ -69,7 +67,7 @@ function Intro({ setPage }: Pick<Props,'setPage'>) {
     <div className="learner-explain-grid">
       {[
         ['01','Goal & Context','ช่วงชั้น เป้าหมาย โรงเรียน/คณะ เวลา งบ และข้อจำกัด'],
-        ['02','Baseline','ประเมิน readiness และใช้เป็น prerequisite gate'],
+        ['02','Baseline Test','ทำ test เพื่อดูว่าควรเริ่ม Foundation, Core หรือ Intensive'],
         ['03','Gap Map','สิ่งที่ต้องเติมก่อนพาไปถึงเป้า'],
         ['04','Recommended Path','ลำดับที่ควรทำ ไม่ใช่ลิสต์คอร์สทั้งหมดที่เรามี'],
         ['05','Support','เพิ่มความช่วยเหลือตามความซับซ้อน ความต่อเนื่อง และ stakes ของเป้าหมาย'],
@@ -101,10 +99,6 @@ function Goal({profile,setProfile,setPage}:{profile:Profile;setProfile:(x:Profil
       <Choice title="เป้าหมาย" value={profile.goal} options={goals} onChange={v=>setProfile({...profile,goal:v,targetFaculty:profile.stage==='Upper Secondary'?v:profile.targetFaculty})}/>
       {profile.stage==='Lower Secondary' && <Choice title="โรงเรียน / โปรแกรมเป้าหมาย" value={profile.targetSchool} options={['General M.4','เตรียมอุดม','MWIT','KVIS']} onChange={v=>setProfile({...profile,targetSchool:v})}/>}
       {profile.stage==='Upper Secondary' && <Choice title="คณะ / track เป้าหมาย" value={profile.targetFaculty} options={['วิศวะ','แพทย์','บริหาร','วิทยาศาสตร์','สถาปัตย์','สายสุขภาพ','ศิลป์ / สังคม','ยังไม่แน่ใจ']} onChange={v=>setProfile({...profile,targetFaculty:v})}/>}
-      <div className="field-block">
-        <div className="field-title">คะแนนปัจจุบันโดยประมาณ <b>{profile.currentScore}</b></div>
-        <input className="score-range" type="range" min="20" max="95" value={profile.currentScore} onChange={e=>setProfile({...profile,currentScore:Number(e.target.value)})}/>
-      </div>
       <Choice title="เวลาที่มี" value={profile.time} options={['2–4 ชม./สัปดาห์','5–7 ชม./สัปดาห์','8+ ชม./สัปดาห์']} onChange={v=>setProfile({...profile,time:v})}/>
       <Choice title="รูปแบบการเรียน" value={profile.supportMode} options={['Anywhere','Branch','Hybrid']} onChange={v=>setProfile({...profile,supportMode:v})}/>
       <Choice title="ระดับ support ที่ต้องการ" value={profile.supportNeed} options={['Low','Medium','High']} onChange={v=>setProfile({...profile,supportNeed:v})}/>
@@ -137,17 +131,17 @@ function Baseline({profile,setProfile,setPage}:{profile:Profile;setProfile:(x:Pr
 
   if(!q){
     const score=30+correct*20
-    const readiness=score>=70?'ผ่าน baseline gate':score>=55?'ใกล้พร้อม แต่ยังควรเติม foundation':'ควรปิด foundation gap ก่อน'
+    const placement=score>=70?'Intensive / Exam Practice':score>=55?'Core / Content first':'Foundation first'
+    const readiness=score>=70?'พร้อมไปต่อคอร์สตะลุยโจทย์':score>=55?'ปิดเนื้อหาหลักให้แน่นก่อน':'เริ่มจากพื้นฐานก่อน'
     return <section className="page narrow">
       <Back page="baseline" setPage={setPage}/>
       <div className="eyebrow">STEP 2 · BASELINE COMPLETE</div>
-      <h1 className="section-title">Baseline result <span className="red-text">{score}</span></h1>
-      <div className="baseline-summary">
-        <div><span>Baseline test</span><b>{score}</b><i>{readiness}</i></div>
-        <div><span>Current score</span><b>{profile.currentScore}</b><i>ใช้เป็น context ประกอบ</i></div>
-        <div><span>Gate</span><b>{profile.completedPrerequisite||score>=70?'OPEN':'LOCKED'}</b><i>prerequisite OR baseline ≥ 70</i></div>
+      <h1 className="section-title">Baseline Score <span className="red-text">{score}</span></h1>
+      <p className="lead">คะแนนเดียวนี้ใช้จัด starting point ของ learner ก่อนแนะนำ package</p>
+      <div className="baseline-result">
+        <div><span>START HERE</span><b>{placement}</b><p>{readiness}</p></div>
       </div>
-      <div className="end"><button className="primary" onClick={()=>{setProfile({...profile,score});setPage('gap')}}>ดู Gap Map →</button></div>
+      <div className="end"><button className="primary" onClick={()=>{setProfile({...profile,baselineScore:score});setPage('gap')}}>ดู Gap Map →</button></div>
     </section>
   }
 
@@ -174,28 +168,43 @@ function Baseline({profile,setProfile,setPage}:{profile:Profile;setProfile:(x:Pr
 }
 
 function Gap({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
-  const gap=Math.max(0,70-profile.score)
+  if(profile.baselineScore===null) return <section className="page narrow">
+    <Back page="gap" setPage={setPage}/>
+    <div className="eyebrow">STEP 3 · GAP MAP</div>
+    <h1 className="section-title">ทำ Baseline Test ก่อน</h1>
+    <p className="lead">Gap Map ใช้ผล test เดียวกันในการจัด starting point และคัด package ที่เหมาะ</p>
+    <div className="end"><button className="primary" onClick={()=>setPage('baseline')}>ไปทำ Baseline Test →</button></div>
+  </section>
+
+  const gap=Math.max(0,70-profile.baselineScore)
   return <section className="page">
     <Back page="gap" setPage={setPage}/>
     <div className="eyebrow">STEP 3 · GAP MAP</div>
-    <h1 className="section-title">Gap ที่มีผลต่อ<br/>package eligibility</h1>
-    <div className="profile-strip"><span>{profile.stage}</span><span>{profile.need}</span><span>{profile.goal}</span><span>Baseline {profile.score}</span><span>{profile.budgetBand}</span></div>
+    <h1 className="section-title">ต้องเติมอะไรก่อน<br/>ไปคอร์สที่เข้มขึ้น?</h1>
+    <div className="profile-strip"><span>{profile.stage}</span><span>{profile.need}</span><span>{profile.goal}</span><span>Baseline {profile.baselineScore}</span><span>{profile.budgetBand}</span></div>
     <div className="gap-grid">
-      <article className={gap>15?'gap-card urgent':'gap-card medium'}><span>READINESS GAP</span><b>Baseline threshold</b><strong>{gap}</strong><p>คะแนนที่ยังห่างจาก threshold 70</p></article>
-      <article className="gap-card medium"><span>CONSTRAINT</span><b>Support</b><strong>{profile.supportNeed}</strong><p>{profile.supportMode} · {profile.time}</p></article>
-      <article className={profile.completedPrerequisite?'gap-card good':'gap-card medium'}><span>PREREQUISITE</span><b>Prior OnDemand</b><strong>{profile.completedPrerequisite?'PASS':'OPEN'}</strong><p>ใช้ร่วมกับ baseline เพื่อ unlock intensive route</p></article>
+      <article className={gap>15?'gap-card urgent':'gap-card medium'}><span>READINESS</span><b>Distance to intensive</b><strong>{gap}</strong><p>คะแนนที่ยังห่างจาก threshold 70</p></article>
+      <article className="gap-card medium"><span>LEARNING FIT</span><b>Support</b><strong>{profile.supportNeed}</strong><p>{profile.supportMode} · {profile.time}</p></article>
+      <article className={profile.baselineScore>=70?'gap-card good':'gap-card medium'}><span>STARTING POINT</span><b>Recommended level</b><strong>{profile.baselineScore>=70?'READY':profile.baselineScore>=55?'CORE':'FOUNDATION'}</strong><p>{profile.baselineScore>=70?'พร้อมดู intensive / exam practice':profile.baselineScore>=55?'เก็บ content หลักก่อน':'ปูพื้นฐานก่อน'}</p></article>
     </div>
-    <div className="logic-callout"><b>Eligibility before intensity.</b><span>ถ้ายังไม่ผ่าน prerequisite gate ระบบจะไม่ยก intensive / advanced package เป็น Best Match</span></div>
     <div className="end"><button className="primary" onClick={()=>setPage('path')}>ดู Recommended Path →</button></div>
   </section>
 }
 
 function Path({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
+  if(profile.baselineScore===null) return <section className="page narrow">
+    <Back page="path" setPage={setPage}/>
+    <div className="eyebrow">STEP 4 · RECOMMENDED PATH</div>
+    <h1 className="section-title">ต้องมี Baseline ก่อน</h1>
+    <p className="lead">Recommendation ใช้คะแนน Baseline Test เพื่อไม่พา learner ไปเริ่มผิดระดับ</p>
+    <div className="end"><button className="primary" onClick={()=>setPage('baseline')}>ไปทำ Baseline Test →</button></div>
+  </section>
+
   const input:RecommendationInput={
     stage:profile.stage,
     need:profile.need,
     goal:profile.goal,
-    baselineScore:profile.score,
+    baselineScore:profile.baselineScore,
     budgetBand:profile.budgetBand,
     supportNeed:profile.supportNeed,
     targetSchool:profile.targetSchool,
@@ -205,17 +214,18 @@ function Path({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
   const recs=recommendPackages(input)
   const primary=recs[0]
   const alternatives=recs.slice(1)
+
   return <section className="page">
     <Back page="path" setPage={setPage}/>
     <div className="eyebrow">STEP 4 · RECOMMENDED PATH</div>
     <div className="section-head compact">
       <div>
         <h1 className="section-title">Your Compass</h1>
-        <p className="lead">ลำดับที่ควรทำ ไม่ใช่ลิสต์คอร์สทั้งหมดที่เรามี</p>
+        <p className="lead">เลือก starting point จาก goal + baseline + constraint แล้วคัด package ที่เหมาะที่สุด</p>
       </div>
       <button className="edit-link" onClick={()=>setPage('goal')}>Edit context</button>
     </div>
-    <div className="profile-strip"><span>{profile.goal}</span><span>Baseline {profile.score}</span><span>{profile.budgetBand}</span><span>{profile.supportNeed} support</span></div>
+    <div className="profile-strip"><span>{profile.goal}</span><span>Baseline {profile.baselineScore}</span><span>{profile.budgetBand}</span><span>{profile.supportNeed} support</span></div>
 
     {primary && <article className="primary-path-card">
       <div className="primary-path-label">PRIMARY RECOMMENDED PATH · BEST MATCH</div>
@@ -238,8 +248,18 @@ function Path({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
       </article>)}
     </div>
 
-    <div className="logic-callout"><b>Prerequisite gate</b><span>{intensiveGateMessage(input)}</span></div>
-    <div className="end"><button className="primary" onClick={()=>setPage('support')}>ต่อไป: Support →</button></div>
+    <div className="mypath-handoff">
+      <div>
+        <span>NEXT · EXISTING ONDEMAND EXPERIENCE</span>
+        <b>Continue with MyPath+</b>
+        <p>Compass ช่วยตอบว่า “ควรเรียนอะไรและเริ่มตรงไหน” จากนั้น MyPath+ รับต่อเรื่อง study plan และ progress tracking</p>
+      </div>
+      <strong>Compass → MyPath+</strong>
+    </div>
+
+    <div className="end secondary-end">
+      <button className="secondary" onClick={()=>setPage('support')}>ดู Support Options →</button>
+    </div>
   </section>
 }
 
@@ -286,13 +306,14 @@ function Support({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
 }
 
 function Outcome({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
-  const latest=Math.min(100,profile.score+12)
+  const baseline=profile.baselineScore ?? 0
+  const latest=Math.min(100,baseline+12)
   return <section className="page">
     <Back page="outcome" setPage={setPage}/>
     <div className="eyebrow">STEP 6 · OUTCOME</div>
     <h1 className="section-title">ผลเปลี่ยน<br/>Recommendation ก็เปลี่ยน</h1>
     <div className="outcome-board">
-      <div className="score-change"><span>Baseline</span><b>{profile.score}</b><i>→</i><span>Latest assessment</span><b>{latest}</b></div>
+      <div className="score-change"><span>Baseline</span><b>{baseline}</b><i>→</i><span>Latest assessment</span><b>{latest}</b></div>
       <div className="outcome-copy"><b>Outcome closes the individual loop</b><p>เมื่อ baseline / outcome เปลี่ยน ระบบจะประเมิน eligibility และ path ใหม่ แทนที่จะขาย package เดิมซ้ำโดยไม่ดู learner state</p></div>
     </div>
 
