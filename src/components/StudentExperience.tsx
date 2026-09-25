@@ -216,7 +216,7 @@ function Support({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
       <article>
         <span>02 · ACADEMIC CLEAR</span>
         <b>Human academic escalation</b>
-        <p>เมื่อคำถามยัง unresolved หรือ confidence ต่ำ ให้ทีมวิชาการรับช่วงต่อพร้อม context</p>
+        <p>เมื่อคำถามยัง unresolved หรือ confidence ต่ำ ให้ทีมวิชาการรับช่วงต่อพร้อม context โดยใช้ CLEAR เป็น human fallback (current service expectation: response within 24 hours)</p>
       </article>
       <article className={profile.supportNeed==='High'?'support-watch':''}>
         <span>03 · PERSONAL LEARNING SUPPORT</span>
