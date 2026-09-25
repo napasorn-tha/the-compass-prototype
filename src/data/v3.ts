@@ -100,6 +100,14 @@ const ijso = 'https://shoponline.ondemand.in.th/pack-ijso.html'
 
 export const catalogOffers: CatalogOffer[] = [
   {id:'pri-01',sku:'4881',stage:'Primary',subject:'Science + Math',family:'Primary school content',layer:'Core pack',name:'Pack วิทย์ + คณิต ป.4 เทอม 1 (4015,4814)',price:4300,needTags:['Foundation','Grade improvement','Ongoing support'],decisionLogics:['grade','subject','term'],issue:'CLEAR_ROLE',sourceUrl:shop},
+  {id:'pri-math-fnd',sku:'MOCK-PRI-MATH-FND',stage:'Primary',subject:'Math',family:'Primary Mathematics',layer:'Core pack',name:'Primary Mathematics — Foundation',price:3900,needTags:['Foundation'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-math-school',sku:'MOCK-PRI-MATH-SCHOOL',stage:'Primary',subject:'Math',family:'Primary Mathematics',layer:'Core pack',name:'Primary Mathematics School Exam — Content',price:4900,needTags:['Grade improvement','Ongoing support'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-math-comp',sku:'MOCK-PRI-MATH-COMP',stage:'Primary',subject:'Math',family:'Primary Mathematics',layer:'Exam bundle',name:'Primary Competitive Mathematics — Intensive',price:6900,needTags:['Competition'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-sci-fnd',sku:'MOCK-PRI-SCI-FND',stage:'Primary',subject:'Science',family:'Primary Science',layer:'Core pack',name:'Primary Science — Foundation',price:3900,needTags:['Foundation'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-sci-school',sku:'MOCK-PRI-SCI-SCHOOL',stage:'Primary',subject:'Science',family:'Primary Science',layer:'Core pack',name:'Primary Science School Exam — Content',price:4900,needTags:['Grade improvement','Ongoing support'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-sci-comp',sku:'MOCK-PRI-SCI-COMP',stage:'Primary',subject:'Science',family:'Primary Science',layer:'Exam bundle',name:'Primary Competitive Science — Intensive',price:6900,needTags:['Competition'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-eng-fnd',sku:'MOCK-PRI-ENG-FND',stage:'Primary',subject:'English',family:'Primary English',layer:'Core pack',name:'Primary English — Foundation',price:3900,needTags:['Foundation'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
+  {id:'pri-eng-school',sku:'MOCK-PRI-ENG-SCHOOL',stage:'Primary',subject:'English',family:'Primary English',layer:'Core pack',name:'Primary English School Exam — Content',price:4900,needTags:['Grade improvement','Ongoing support'],decisionLogics:['baseline','need-state','subject'],issue:'CLEAR_ROLE',sourceUrl:''},
 
   {id:'jr-m1',sku:'8186',stage:'Lower Secondary',subject:'Math',family:'Math M.1–M.3 content',layer:'Core pack',name:'Pack 1 คณิตศาสตร์ ม.ต้น (8101-8102)',price:3300,needTags:['Foundation','Grade improvement','Ongoing support'],decisionLogics:['pack-number','subject'],issue:'DISCOVERY_CONFUSION',sourceUrl:mathCampaign},
   {id:'jr-m2',sku:'8187',stage:'Lower Secondary',subject:'Math',family:'Math M.1–M.3 content',layer:'Core pack',name:'Pack 2 คณิตศาสตร์ ม.ต้น (8103-8104)',price:3600,needTags:['Foundation','Grade improvement','Ongoing support'],decisionLogics:['pack-number','subject'],issue:'DISCOVERY_CONFUSION',sourceUrl:mathCampaign},
@@ -180,6 +188,9 @@ export const catalogOffers: CatalogOffer[] = [
 export const needStates: NeedState[] = ['Foundation','Grade improvement','Entrance','Competition','TCAS / University','Ongoing support']
 
 export const customerVoiceRecords = [
+  {stage:'Primary',subject:'Math',pack:'Primary Mathematics · learner cohort',sample:21,takeaway:'เด็กประถมที่เรียนคณิตไม่ได้มี need เดียวกัน แม้อยู่ช่วงชั้นเดียวกัน',implication:'เริ่มจาก baseline แล้ว route ไป Foundation / School Performance / Competitive แทนการใช้ grade เป็นตัวเลือกหลัก',themes:[['School Exam',9,'ต้องการช่วยผลการเรียนและข้อสอบในโรงเรียน'],['Foundation',8,'ต้องปูพื้นฐานก่อนเพิ่มความเข้มข้น'],['Competitive',4,'ต้องการเส้นทางแข่งขันที่เข้มขึ้น']]},
+  {stage:'Primary',subject:'Science',pack:'Primary Science · learner cohort',sample:12,takeaway:'Science มีทั้งเด็กที่ต้องปูพื้นฐาน เด็กเรียนตามโรงเรียน และเด็กเตรียมแข่งขัน',implication:'ใช้ baseline + need state เลือก starting point ก่อนค่อยจัด package',themes:[['School Exam',6,'เรียนให้ทันและทำข้อสอบโรงเรียน'],['Foundation',4,'พื้นฐานยังไม่พร้อมสำหรับ content ที่เร็วขึ้น'],['Competitive',2,'ต้องการโจทย์และความลึกเพิ่ม']]},
+  {stage:'Primary',subject:'English',pack:'Primary English · learner cohort',sample:7,takeaway:'Primary English ใน mock cohort ถูกใช้เพื่อ school performance เป็นหลัก แต่บางคนยังต้องเริ่มจาก foundation',implication:'แยก school-performance route ออกจาก foundation route ให้ชัด และให้ baseline เป็นตัวเลือกจุดเริ่ม',themes:[['School Exam',6,'เป้าหมายหลักคือผลการเรียนในโรงเรียน'],['Foundation',1,'ต้องเสริมพื้นฐานก่อนเดินตาม pace หลัก']]},
   {stage:'Lower Secondary',subject:'Math',pack:'Pack 1 คณิตศาสตร์ ม.ต้น (8101-8102)',sample:32,takeaway:'คำถามหลักคือ “ควรเริ่ม Pack ไหน” มากกว่า “OnDemand มีคอร์สคณิตไหม”',implication:'ใช้ baseline / topic gap route ไป Pack 1–6 แทนการให้ลูกค้า decode pack number เอง',themes:[['จุดเริ่มต้น',12,'ไม่แน่ใจว่าควรเริ่มจาก pack ไหน'],['พื้นฐาน',9,'ถามว่าต้องมีพื้นฐานแค่ไหน'],['โจทย์',7,'สนใจโจทย์เสริมหลังเรียน concept'],['ราคา / bundle',4,'เปรียบเทียบซื้อเดี่ยวกับซื้อ pack']]},
   {stage:'Upper Secondary',subject:'Math',pack:'Pack 1 คณิตศาสตร์ ม.ปลาย (8201-8204)',sample:44,takeaway:'School-support และ admission-prep อยู่ในวิชาเดียวกัน แต่ customer job-to-be-done ต่างกัน',implication:'หน้าเลือกคอร์สควรให้เลือก “เพิ่มเกรด / เรียนตามโรงเรียน” หรือ “เตรียม A-Level” ก่อนเลือก pack',themes:[['เพิ่มเกรด',13,'ต้องการ alignment กับเนื้อหาโรงเรียน'],['พื้นฐาน',12,'ถามความเหมาะกับคนพื้นฐานต่างระดับ'],['โจทย์',11,'ต้องการ practice หลังเข้า concept'],['ราคา / value',8,'เทียบ pack กับ specialist']]},
   {stage:'Upper Secondary',subject:'Physics',pack:"Pack V-Series Physics TCAS + Upskill ฟิสิกส์ A-Level (Dek70)",sample:38,takeaway:'คำว่า DEK70, TCAS, Upskill และ V.71 อยู่ใกล้กันใน storefront จึงเสี่ยงให้ลูกค้าไม่รู้ว่า variant ไหนเหมาะกับตัวเอง',implication:'เปลี่ยนจาก naming-first เป็น readiness-first: Core only / Core + Practice / Practice only',themes:[['ชื่อรุ่น / version',13,'สับสน DEK70 vs V.71'],['ความพร้อม',10,'ไม่แน่ใจว่าควรซื้อ core หรือ upskill'],['โจทย์ / practice',9,'ต้องการรู้ว่าต่างจาก core ตรงไหน'],['ราคา',6,'ราคาใกล้กันทำให้ต้องเทียบรายละเอียด']]},
@@ -188,7 +199,7 @@ export const customerVoiceRecords = [
 
 export type CompetitorProfile = {
   subject: 'Math' | 'Physics' | 'Chemistry' | 'Biology' | 'English'
-  level: 'Lower Secondary' | 'Upper Secondary / TCAS'
+  level: 'Primary' | 'Lower Secondary' | 'Upper Secondary / TCAS'
   brand: string
   type: 'OnDemand' | 'Specialist' | 'Multi-subject'
   visibleOffer: string
@@ -197,6 +208,11 @@ export type CompetitorProfile = {
 }
 
 export const competitorProfiles: CompetitorProfile[] = [
+  {subject:'Math',level:'Primary',brand:'OnDemand',type:'OnDemand',visibleOffer:'Foundation / School Performance / Competitive Math paths',positioning:['Foundation','School performance','Competitive','One-stop'],portfolioQuestion:'Baseline route เด็กไป Foundation vs School Performance vs Competitive ได้ชัดแค่ไหน?'},
+  {subject:'Math',level:'Primary',brand:'WE BY THE BRAIN',type:'Multi-subject',visibleOffer:'Primary / ม.1 entrance Math with foundation, intensive and practice options',positioning:['Primary','M.1 entrance','Foundation','Practice'],portfolioQuestion:'คู่แข่งแบ่ง journey ปูพื้นฐาน → ติวเข้ม → ตะลุยโจทย์ชัดแค่ไหนเมื่อเทียบกับเรา?'},
+  {subject:'Science',level:'Primary',brand:'OnDemand',type:'OnDemand',visibleOffer:'Foundation / School Performance / Competitive Science paths',positioning:['Foundation','School performance','Competitive','One-stop'],portfolioQuestion:'เด็กที่พื้นฐานต่างกันถูกส่งเข้า course stage ที่เหมาะก่อนเพิ่มความเข้มข้นหรือยัง?'},
+  {subject:'Science',level:'Primary',brand:'WE BY THE BRAIN',type:'Multi-subject',visibleOffer:'Primary / ม.1 entrance Science including foundation and deeper-prep stages',positioning:['Primary','M.1 entrance','Foundation','Exam prep'],portfolioQuestion:'ควรทำ progression ของ Primary Science ให้เห็น starting point ง่ายขึ้นหรือไม่?'},
+
   {subject:'Math',level:'Upper Secondary / TCAS',brand:'OnDemand',type:'OnDemand',visibleOffer:'Pack 1–5 Math content / MATH ADMISSIONS TCAS / +Upskill',positioning:['School content','TCAS','Pack breadth'],portfolioQuestion:'School-support vs TCAS vs practice ถูก route ชัดพอหรือยัง?'},
   {subject:'Math',level:'Upper Secondary / TCAS',brand:'SmartMathPro (พี่ปั้น)',type:'Specialist',visibleOffer:'Math specialist: high-school / A-Level pathways',positioning:['Math specialist','Foundation','Exam prep'],portfolioQuestion:'Specialist positioning ทำให้ entry point เข้าใจง่ายกว่าหรือไม่?'},
   {subject:'Math',level:'Upper Secondary / TCAS',brand:'WE BY THE BRAIN',type:'Multi-subject',visibleOffer:'Math high-school / A-Level + multi-subject exam prep',positioning:['Multi-subject','School content','Exam prep'],portfolioQuestion:'เทียบ breadth, package clarity และ cross-subject journey'},
@@ -250,6 +266,7 @@ export const decisionQueue = [
   {id:'Q03',classification:'DISCOVERY CONFUSION',title:'Math ม.ต้น Pack 1–6 + topic modules',evidence:'โครงสินค้ามีเหตุผลเชิงวิชาการ แต่ชื่อ pack number ไม่บอก learner ว่าควรเริ่มตรงไหน',recommendation:'ROUTE BETTER',why:'รักษา modularity หลังบ้าน แต่ให้ Compass เลือก entry point จาก gap'},
   {id:'Q04',classification:'PORTFOLIO ARCHITECTURE',title:'Medical pathway 1 / 3 / 5 / 7 subjects + rounds',evidence:'ลูกค้าต้องเลือกทั้งจำนวนวิชา รอบสอบ และ readiness พร้อมกัน',recommendation:'SIMPLIFY FRONT-END PATH',why:'ไม่จำเป็นต้องลด SKU ทุกตัว แต่ควรลด decision load ที่หน้าบ้าน'},
   {id:'Q05',classification:'ECOSYSTEM ROUTE',title:'International → Thai university bridge',evidence:'Need เดียวอาจใช้ OnDemand academic + Ignite international capability + TCASter admission',recommendation:'CROSS-BU PILOT',why:'Orchestrate capability ก่อนสร้าง all-in-one SKU ใหม่'},
+  {id:'Q06',classification:'PRIMARY ROUTING',title:'Primary: Foundation vs School Performance starting point',evidence:'Primary cohort มีทั้ง Foundation, School Exam และ Competitive needs ใน Math / Science / English',recommendation:'ROUTE BY BASELINE',why:'เด็กชั้นเดียวกันไม่ได้พร้อมเท่ากัน — baseline ควรเป็นตัวเลือกว่าจะเริ่ม Foundation, Core หรือ Competitive'},
 ] as const
 
 export function percent(numerator: number, denominator: number) {
