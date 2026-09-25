@@ -15,11 +15,11 @@ import { appSnapshot } from '../data/appSnapshot'
 type Workspace = 'performance' | 'voice' | 'competitor' | 'journey' | 'tracking' | 'decisions'
 
 const workspaces: {id:Workspace;label:string}[] = [
-  {id:'performance',label:'Portfolio Performance'},
-  {id:'voice',label:'Customer Voice'},
-  {id:'competitor',label:'Competitor Intel'},
+  {id:'performance',label:'Performance'},
+  {id:'voice',label:'Customer & Learner'},
+  {id:'competitor',label:'Market & Competitors'},
   {id:'journey',label:'Journey & Outcomes'},
-  {id:'tracking',label:'Package Tracking'},
+  {id:'tracking',label:'Product & Package Review'},
   {id:'decisions',label:'Decision Queue'},
 ]
 
@@ -86,7 +86,7 @@ function PortfolioPerformance({openDecisions}:{openDecisions:()=>void}) {
 
   return <div className="p4-stack">
     <div className="p4-intro">
-      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Meeting cockpit — evidence first, decision last</h2><p>What happened → Where → Why → So what → Decision</p></div>
+      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Start with performance, then find the driver</h2><p>What happened → Where → Why → So what → Decision</p></div>
       <div className="p4-kpi"><span>CONNECTED SNAPSHOT</span><b>{o.learners}</b><small>learners in shared spine</small></div>
     </div>
 
@@ -101,6 +101,20 @@ function PortfolioPerformance({openDecisions}:{openDecisions:()=>void}) {
     </div>
 
     <div className="p4-estimate-note">EST. CONTRIBUTION MARGIN · Directional estimate across the full 414-enrollment snapshot using explicit variable-cost assumptions by delivery mode, purchase channel and support tier. Not accounting actuals. Public company net margin is not used as contribution margin.</div>
+
+    <div className="p4-attention">
+      <div className="p4-attention-head">
+        <div><span>WHAT NEEDS ATTENTION</span><b>{decisionQueue.length} portfolio questions are ready for review</b></div>
+        <button onClick={openDecisions}>Open Decision Queue →</button>
+      </div>
+      <div className="p4-attention-grid">
+        {decisionQueue.slice(0,3).map(item=><article key={item.id}>
+          <span>{item.classification}</span>
+          <b>{item.title}</b>
+          <small>{item.recommendation}</small>
+        </article>)}
+      </div>
+    </div>
 
     <div className="p4-story-label"><span>02 · WHERE?</span><b>Change the lens before interpreting the signal</b></div>
     <div className="p4-filterline">
@@ -329,18 +343,91 @@ function JourneyOutcomes() {
 
 
 function Decisions() {
-  const [chosen,setChosen]=useState<Record<string,string>>({})
   const actionSets=['KEEP','REPOSITION','ROUTE BETTER','REPACKAGE','MERGE','GROW','HARVEST','EXIT']
+  const ownerOptions=['PM — TCAS','PM — Lower Secondary','PM — Science','PM — Medical Pathway','PM — Ecosystem / Partnerships']
+  const defaultOwners:Record<string,string>={
+    Q01:'PM — TCAS',
+    Q02:'PM — TCAS',
+    Q03:'PM — Lower Secondary',
+    Q04:'PM — Medical Pathway',
+    Q05:'PM — Ecosystem / Partnerships',
+  }
+  const defaultDirections:Record<string,string>={
+    Q01:'Clarify cohort vs content version at the entry point before changing the SKU structure.',
+    Q02:'Do not merge until attach, substitution and outcome data confirm true cannibalization.',
+    Q03:'Keep the modular course structure; simplify learner entry through gap-based routing.',
+    Q04:'Simplify the front-end choice first. Preserve backend variants until migration impact is clear.',
+    Q05:'Pilot the cross-company route before building a new standalone product; protect clear ownership and economics.',
+  }
+
+  const [chosen,setChosen]=useState<Record<string,string>>(
+    Object.fromEntries(decisionQueue.map(item=>[item.id,item.recommendation.split(' / ')[0]]))
+  )
+  const [owners,setOwners]=useState<Record<string,string>>(defaultOwners)
+  const [statuses,setStatuses]=useState<Record<string,string>>(
+    Object.fromEntries(decisionQueue.map(item=>[item.id,'To review']))
+  )
+  const [directions,setDirections]=useState<Record<string,string>>(defaultDirections)
+
   return <div className="p4-stack">
-    <Readout see={decisionQueue.length+' decision signals ready for portfolio review'} matters="แยก “ของซ้ำจริง” ออกจาก “ของต่างแต่หน้าร้านทำให้สับสน” ก่อนตัด SKU" decision="Prioritize decision-complexity fixes before building new products"/>
-    <div className="p4-intro"><div><div className="eyebrow">DECISION QUEUE</div><h2>Structure → Evidence → Action</h2><p>Portfolio action ไม่ได้มีแค่ Grow / Merge / Exit — บางกรณีคำตอบคือ Reposition หรือ Route Better</p></div></div>
+    <Readout
+      see={decisionQueue.length+' portfolio questions ready for review'}
+      matters="A portfolio decision needs evidence, an explicit action, an owner and a clear direction — not only a dashboard signal."
+      decision="Prioritize the highest-impact questions, assign the right Product Manager and review the effect before adding or removing products."
+    />
+
+    <div className="p4-intro">
+      <div>
+        <div className="eyebrow">DECISION QUEUE</div>
+        <h2>Evidence → Decision → Owner → Review</h2>
+        <p>Choose the portfolio action, assign ownership and leave a clear direction for what should change — including what must be protected.</p>
+      </div>
+      <div className="p4-kpi"><span>OPEN QUESTIONS</span><b>{decisionQueue.length}</b><small>prototype decision signals</small></div>
+    </div>
+
     <div className="p4-queue">
-      {decisionQueue.map(item=><article key={item.id}>
+      {decisionQueue.map(item=><article className="p4-decision-card" key={item.id}>
         <div className="p4-qhead"><span>{item.classification}</span><h3>{item.title}</h3><b>{item.recommendation}</b></div>
+
         <div className="p4-evidence"><span>EVIDENCE</span><p>{item.evidence}</p></div>
-        <div className="p4-why"><span>WHY</span><p>{item.why}</p></div>
-        <div className="p4-actions">{actionSets.map(a=><button className={chosen[item.id]===a?'active':''} onClick={()=>setChosen({...chosen,[item.id]:a})} key={a}>{a}</button>)}</div>
-        {chosen[item.id]&&<div className="p4-chosen">Decision: <b>{chosen[item.id]}</b> · PM owner · Monthly portfolio review</div>}
+        <div className="p4-why"><span>WHY IT MATTERS</span><p>{item.why}</p></div>
+
+        <div className="p4-decision-section">
+          <span>PORTFOLIO ACTION</span>
+          <div className="p4-actions">
+            {actionSets.map(a=><button className={chosen[item.id]===a?'active':''} onClick={()=>setChosen({...chosen,[item.id]:a})} key={a}>{a}</button>)}
+          </div>
+        </div>
+
+        <div className="p4-owner-row">
+          <label>
+            <span>OWNER</span>
+            <select value={owners[item.id] || ownerOptions[0]} onChange={e=>setOwners({...owners,[item.id]:e.target.value})}>
+              {ownerOptions.map(owner=><option value={owner} key={owner}>{owner}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>STATUS</span>
+            <select value={statuses[item.id] || 'To review'} onChange={e=>setStatuses({...statuses,[item.id]:e.target.value})}>
+              {['To review','In analysis','Test / pilot','Approved','Monitor impact'].map(status=><option value={status} key={status}>{status}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <label className="p4-direction">
+          <span>DIRECTION / REMARK</span>
+          <textarea
+            value={directions[item.id] || ''}
+            onChange={e=>setDirections({...directions,[item.id]:e.target.value})}
+            rows={2}
+          />
+        </label>
+
+        <div className="p4-chosen">
+          <b>{chosen[item.id]}</b>
+          <span>Owner: {owners[item.id]}</span>
+          <span>Status: {statuses[item.id]}</span>
+        </div>
       </article>)}
     </div>
   </div>
@@ -358,17 +445,17 @@ export default function PortfolioOS(){
   },[workspace])
 
   return <section className="page portfolio-page">
-    <div className="section-head">
+    <div className="section-head portfolio-main-head">
       <div>
-        <div className="eyebrow">03 · PORTFOLIO OS / AGGREGATED MANAGEMENT LAYER</div>
-        <h1 className="section-title">Portfolio Operating System</h1>
-        <p className="lead">What should the business change next? Aggregate learner, commercial and market signals into evidence-backed portfolio decisions.</p>
+        <div className="eyebrow">PRODUCT PORTFOLIO MANAGEMENT</div>
+        <h1 className="section-title">Portfolio Overview</h1>
+        <p className="lead">Use learner needs, performance, outcomes, competitor signals and product constraints to decide what to grow, reposition, merge, replace or retire.</p>
       </div>
-      <div className="section-number">03</div>
+      <div className="section-number">01</div>
     </div>
 
     <div className="portfolio-progression">
-      <span>PERFORMANCE</span><i>→</i><span>CUSTOMER / MARKET SIGNALS</span><i>→</i><span>OUTCOME EVIDENCE</span><i>→</i><span>PACKAGE DIAGNOSIS</span><i>→</i><span>DECISION</span>
+      <span>PERFORMANCE</span><i>→</i><span>CUSTOMER NEED</span><i>→</i><span>MARKET & COMPETITORS</span><i>→</i><span>PRODUCT DIAGNOSIS</span><i>→</i><span>DECISION</span><i>→</i><span>OWNER & REVIEW</span>
     </div>
 
     <div className="workspace-tabs">{workspaces.map(w=><button className={workspace===w.id?'active':''} onClick={()=>setWorkspace(w.id)} key={w.id}>{w.label}</button>)}</div>
