@@ -83,6 +83,16 @@ export function intensiveGate(input: RecommendationInput){
   return Boolean(input.completedPrerequisite)||input.baselineScore>=70
 }
 
+function isAdvancedTrack(stage:LearnerStage, track:string){
+  if(stage==='Primary') return track==='Competitive'
+  if(stage==='Lower Secondary') return track==='Competitive'||track==='School Entrance'
+  return !['Foundation','School Exam','TCAS Early Prep','Explore Admission'].includes(track)
+}
+
+function eligibleForGate(input:RecommendationInput, track:string){
+  return intensiveGate(input)||!isAdvancedTrack(input.stage,track)
+}
+
 export function recommendPackages(input: RecommendationInput):PackageRecommendation[]{
   const desired=desiredTrack(input)
   const gate=intensiveGate(input)
@@ -92,22 +102,33 @@ export function recommendPackages(input: RecommendationInput):PackageRecommendat
       let score=packageFit(p.name,p.track,desired)
       if(input.supportNeed==='High') score+=Math.min(8,p.componentCount)
       if(input.baselineScore<55&&p.track==='Foundation') score+=12
-      return {p,score}
+      if(!eligibleForGate(input,p.track)) score-=80
+      return {p,score,eligible:eligibleForGate(input,p.track)}
     })
+    .filter(x=>x.eligible)
     .sort((a,b)=>b.score-a.score||a.p.price-b.p.price)
 
   const best=ranked[0]
-  const threshold=Math.max(55,(best?.score||0)-35)
+  const threshold=Math.max(45,(best?.score||0)-35)
   const aligned=ranked.filter(x=>x.score>=threshold)
-  const value=[...aligned].filter(x=>x.p.packageId!==best?.p.packageId).sort((a,b)=>a.p.price-b.p.price)[0]||best
+  const value=[...aligned]
+    .filter(x=>x.p.packageId!==best?.p.packageId)
+    .sort((a,b)=>a.p.price-b.p.price)[0]||best
   const used=new Set([best?.p.packageId,value?.p.packageId])
-  const support=[...aligned].filter(x=>!used.has(x.p.packageId)).sort((a,b)=>b.p.componentCount-a.p.componentCount||b.p.price-a.p.price)[0]||
-    [...ranked].filter(x=>!used.has(x.p.packageId)).sort((a,b)=>b.p.componentCount-a.p.componentCount)[0]||best
+  const support=[...aligned]
+    .filter(x=>!used.has(x.p.packageId))
+    .sort((a,b)=>b.p.componentCount-a.p.componentCount||b.p.price-a.p.price)[0]||
+    [...ranked].filter(x=>!used.has(x.p.packageId))
+      .sort((a,b)=>b.p.componentCount-a.p.componentCount)[0]||best
+
+  const gateReason = gate
+    ? ''
+    : ' Prerequisite gate is not yet cleared, so advanced/intensive routes are excluded.'
 
   const rows=[
-    {slot:'Best Match' as const,row:best,reason:`Highest fit for ${desired}, current baseline and goal`},
-    {slot:'Best Value' as const,row:value,reason:'Lowest-priced alternative that still clears the fit threshold'},
-    {slot:'More Support' as const,row:support,reason:'Broader package structure for learners needing more support'},
+    {slot:'Best Match' as const,row:best,reason:`Highest eligible fit for ${desired}, current baseline and goal.${gateReason}`},
+    {slot:'Best Value' as const,row:value,reason:'Lowest-priced eligible alternative that still clears the fit threshold.'},
+    {slot:'More Support' as const,row:support,reason:'Broader eligible package structure for learners needing more support.'},
   ]
 
   return rows.filter(x=>x.row).map((x,index)=>({

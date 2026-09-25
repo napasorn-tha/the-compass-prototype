@@ -5,14 +5,12 @@ import {
   customerVoiceRecords,
   decisionQueue,
   ecosystemRoutes,
-  learnerDistribution,
   needStates,
-  percent,
-  syntheticLearners,
   type LifeStage,
   type NeedState,
 } from '../data/v3'
 import '../portfolio-v4.css'
+import { appSnapshot } from '../data/appSnapshot'
 
 type Workspace = 'performance' | 'voice' | 'competitor' | 'journey' | 'tracking' | 'decisions'
 
@@ -35,65 +33,61 @@ function Readout({see,matters,decision}:{see:string;matters:string;decision:stri
 
 
 function PortfolioPerformance() {
-  const overall = stats('ALL')
-  const tcas = stats('TCAS / University')
-  const ongoing = stats('Ongoing support')
-  const reviewCount = decisionQueue.length
+  const [lens,setLens]=useState<'Segment'|'Package'|'Geography'|'Delivery'>('Segment')
+  const o=appSnapshot.overall
+  const thb=(n:number)=>'฿'+n.toLocaleString()
 
-  const packageRows = [
-    {name:"Pack V-Series Physics TCAS + Upskill ฟิสิกส์ A-Level (Dek70)",segment:'TCAS · Physics',revenue:'฿2.8M',trend:'+11%',conversion:'74%',margin:'61%',outcome:'73%',signal:'GROW / WATCH OVERLAP'},
-    {name:"Pack Math Admission TCAS + UpSkill คณิต A-Level V.71",segment:'TCAS · Math',revenue:'฿2.5M',trend:'+8%',conversion:'71%',margin:'59%',outcome:'70%',signal:'WATCH NAMING'},
-    {name:'Pack 1 คณิตศาสตร์ ม.ปลาย (8201-8204)',segment:'Upper Sec · Math',revenue:'฿1.9M',trend:'+4%',conversion:'55%',margin:'56%',outcome:'68%',signal:'GROW'},
-    {name:'Pack Essential ปูพื้นฐานภาษาอังกฤษ ม.ปลาย',segment:'Upper Sec · English',revenue:'฿1.1M',trend:'-3%',conversion:'49%',margin:'52%',outcome:'66%',signal:'PROMOTE / ROUTE'},
-    {name:'Pack 1 คณิตศาสตร์ ม.ต้น (8101-8102)',segment:'Lower Sec · Math',revenue:'฿0.9M',trend:'+2%',conversion:'56%',margin:'53%',outcome:'69%',signal:'KEEP / ROUTE'},
-  ]
+  const rows = lens==='Segment'
+    ? appSnapshot.segmentStats.map(x=>({name:x.segment,detail:x.learners+' learners',revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
+    : lens==='Package'
+      ? appSnapshot.packageStats.slice(0,12).map(x=>({name:x.packageName,detail:x.track,revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
+      : lens==='Geography'
+        ? appSnapshot.geographyStats.map(x=>({name:x.cluster,detail:x.learners+' learners',revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
+        : appSnapshot.deliveryStats.map(x=>({name:x.mode,detail:'delivery mode',revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
+
+  const topPackage=appSnapshot.packageStats[0]
+  const topGeo=[...appSnapshot.geographyStats].sort((a,b)=>b.revenue-a.revenue)[0]
 
   return <div className="p4-stack">
     <Readout
-      see={'TCAS drives the strongest immediate conversion ('+tcas.recPaid+'%), while ongoing learning shows stronger continuation ('+ongoing.next+'% next-term).'}
-      matters="Portfolio value is coming from different engines: admission urgency now, continuity and cross-subject potential over time."
-      decision={reviewCount+' package / pathway signals need review; protect growth while fixing routing and overlap before adding new packages.'}
+      see={`${o.enrollments} enrollments generate ${thb(o.revenue)} in the final mock snapshot; ${topPackage.packageName} is the largest package by revenue.`}
+      matters={`${topGeo.cluster} is the largest geography by revenue, while Anywhere is the largest delivery mode by enrollment.`}
+      decision="Use the lenses below to isolate the signal before moving a case into Decision Queue."
     />
 
     <div className="p4-intro">
-      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Current portfolio health — one meeting view</h2><p>เปิดหน้าเดียวเพื่อเห็น <b>business performance, learner outcome และ package signals ที่ต้องสนใจตอนนี้</b></p></div>
-      <div className="p4-kpi"><span>ACTIVE REVIEW SIGNALS</span><b>{reviewCount}</b><small>move to Decision Queue when action is required</small></div>
+      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Current portfolio health — one meeting view</h2><p>ตัวเลขชุดเดียวจาก final connected snapshot แล้ว drill ด้วย <b>Segment / Package / Geography / Delivery</b></p></div>
+      <div className="p4-kpi"><span>FINAL MOCK SNAPSHOT</span><b>{o.learners}</b><small>connected learners</small></div>
     </div>
 
     <div className="p4-metrics">
-      <article><span>Paid learners*</span><b>{Math.round(overall.cohort.length*overall.recPaid/100)}</b><small>illustrative monthly snapshot</small></article>
-      <article><span>Rec → Paid*</span><b>{overall.recPaid}%</b><small>paid within 14d ÷ recommended</small></article>
-      <article><span>Next-term*</span><b>{overall.next}%</b><small>eligible learners continuing</small></article>
-      <article><span>Cross-subject*</span><b>{overall.cross}%</b><small>second subject ÷ active learners</small></article>
-      <article><span>Outcome improved*</span><b>{overall.improved}%</b><small>selected learning outcome improved</small></article>
+      <article><span>Revenue</span><b>{thb(o.revenue)}</b><small>enrollment revenue in final mock</small></article>
+      <article><span>Enrollments</span><b>{o.enrollments}</b><small>connected enrollment records</small></article>
+      <article><span>Rec → Paid</span><b>{o.recToPaid}%</b><small>recommendation acceptance / paid proxy</small></article>
+      <article><span>AOV</span><b>{thb(o.aov)}</b><small>average order value</small></article>
+      <article><span>Learning Outcome</span><b>{o.goalAchieved}%</b><small>goal achieved among available outcomes</small></article>
+      <article><span>Contribution Margin</span><b>—</b><small>cost data not available in final mock</small></article>
     </div>
 
-    <div className="p4-performance-split">
-      <article>
-        <span>ACHIEVEMENT ENGINE</span>
-        <h3>TCAS / University</h3>
-        <b>{tcas.recPaid}% Rec→Paid</b>
-        <p>Fast conversion · exam outcome · brand halo</p>
-      </article>
-      <article>
-        <span>RELATIONSHIP ENGINE</span>
-        <h3>Ongoing Learning</h3>
-        <b>{ongoing.next}% Next-term</b>
-        <p>Continuation · cross-subject · longer learner relationship</p>
-      </article>
+    <div className="p4-filterline">
+      {(['Segment','Package','Geography','Delivery'] as const).map(x=><button className={lens===x?'active':''} onClick={()=>setLens(x)} key={x}>{x}</button>)}
     </div>
 
     <div className="p4-performance-table">
-      <div className="p4-performance-head"><span>PACKAGE</span><span>REVENUE*</span><span>TREND*</span><span>REC→PAID*</span><span>MARGIN*</span><span>OUTCOME*</span><span>CURRENT SIGNAL</span></div>
-      {packageRows.map(row=><div className="p4-performance-row" key={row.name}>
-        <div><b>{row.name}</b><small>{row.segment}</small></div>
-        <span>{row.revenue}</span><span>{row.trend}</span><span>{row.conversion}</span><span>{row.margin}</span><span>{row.outcome}</span><strong>{row.signal}</strong>
+      <div className="p4-performance-head"><span>{lens.toUpperCase()}</span><span>REVENUE</span><span>ENROLLMENTS</span><span>AOV</span><span>COMPLETION</span><span>GOAL ACHIEVED</span><span>SIGNAL</span></div>
+      {rows.map(row=><div className="p4-performance-row" key={row.name}>
+        <div><b>{row.name}</b><small>{row.detail}</small></div>
+        <span>{thb(row.revenue)}</span><span>{row.enrollments}</span><span>{thb(row.aov)}</span><span>{row.completion}%</span><span>{row.outcome}%</span>
+        <strong>{row.outcome>=65?'PROTECT / LEARN':row.outcome<45?'REVIEW':'WATCH'}</strong>
       </div>)}
     </div>
 
-    <div className="data-note">*Synthetic internal performance data for prototype discussion. Package names are mapped from OnDemand public catalog / storefront.</div>
+    {lens==='Geography' && <div className="p4-performance-split">
+      {appSnapshot.geographyStats.map(x=><article key={x.cluster}><span>{x.cluster.toUpperCase()}</span><h3>{x.learners} learners</h3><b>{x.anywhereShare}% Anywhere share</b><p>{x.branchPurchaseShare}% branch-purchase share · {x.completion}% completion</p></article>)}
+    </div>}
   </div>
 }
+
 
 function PackageTracking() {
   const [stage,setStage] = useState<LifeStage>('Upper Secondary')
@@ -214,14 +208,13 @@ function CustomerVoice() {
     <div className="p4-themegrid">
       {selected.themes.map(([theme,count,detail])=><article key={String(theme)}><span>{count} mentions</span><b>{theme}</b><p>{detail}</p><div><i style={{width:(Number(count)/selected.sample*100)+'%'}}/></div></article>)}
     </div>
-    <div className="data-note">Comment counts are synthetic placeholders for the interaction model. Replace with reproducible public-review / inquiry coding before treating prevalence as a business finding.</div>
   </div>
 }
 
 function CompetitorIntel() {
   const subjects = ['Math','Physics','Chemistry','Biology','English'] as const
   const [subject,setSubject] = useState<(typeof subjects)[number]>('Math')
-  const levels = ['Upper Secondary / TCAS','Lower Secondary'] as const
+  const levels = ['Lower Secondary','Upper Secondary / TCAS'] as const
   const [level,setLevel] = useState<(typeof levels)[number]>('Upper Secondary / TCAS')
   const rows = competitorProfiles.filter(x=>x.subject===subject && x.level===level)
   const others = rows.filter(x=>x.brand!=='OnDemand')
@@ -246,58 +239,43 @@ function CompetitorIntel() {
       </article>)}
       {!rows.length&&<div className="p4-empty">No competitor mapping in this filter yet.</div>}
     </div>
-    <div className="data-note">Descriptive public-offer mapping — not a brand ranking. Perception claims require review / inquiry evidence.</div>
   </div>
-}
-
-type JourneyKey = 'ALL' | NeedState
-function stats(need:JourneyKey) {
-  const cohort=need==='ALL'?syntheticLearners:syntheticLearners.filter(x=>x.needState===need)
-  const rec=cohort.filter(x=>x.recommended)
-  const paid=rec.filter(x=>x.paid14d)
-  return {
-    cohort,
-    recPaid:percent(paid.length,rec.length),
-    next:percent(cohort.filter(x=>x.nextTerm).length,cohort.length),
-    cross:percent(cohort.filter(x=>x.secondSubject).length,cohort.length),
-    improved:percent(cohort.filter(x=>x.outcomeImproved).length,cohort.length),
-  }
 }
 
 function JourneyOutcomes() {
-  const filters:JourneyKey[]=['ALL','Foundation','Grade improvement','Competition','TCAS / University','Ongoing support']
-  const [need,setNeed]=useState<JourneyKey>('ALL')
-  const s=stats(need), tcas=stats('TCAS / University'), ongoing=stats('Ongoing support')
-  const see = need==='TCAS / University'
-    ? 'TCAS: Rec→Paid '+s.recPaid+'% สูง แต่ Next-term '+s.next+'% ต่ำตามธรรมชาติของ exam lifecycle'
-    : need==='Ongoing support'
-      ? 'Ongoing learning: Rec→Paid '+s.recPaid+'% แต่ Next-term '+s.next+'% และ Cross-subject '+s.cross+'%'
-      : 'แต่ละ need state สร้าง value คนละแบบ — acquisition, outcome และ continuation ต้องอ่านพร้อมกัน'
-  const move = need==='TCAS / University'
-    ? 'Protect fast-conversion / brand-halo value; do not penalize natural post-exam exit'
-    : need==='Ongoing support'
-      ? 'Test continuity as LTV engine; improve discovery / routing before creating more SKUs'
-      : 'Use segment-specific success metrics; avoid one universal “repeat” KPI'
+  const filters=['ALL',...appSnapshot.segmentStats.map(x=>x.segment)] as string[]
+  const [segment,setSegment]=useState('ALL')
+  const s=segment==='ALL'
+    ? {learners:appSnapshot.overall.learners,enrollments:appSnapshot.overall.enrollments,recToPaid:appSnapshot.overall.recToPaid,completion:appSnapshot.overall.avgCompletion,goalAchieved:appSnapshot.overall.goalAchieved,scoreImprovement:appSnapshot.overall.avgScoreImprovement}
+    : appSnapshot.segmentStats.find(x=>x.segment===segment)!
+
+  const tcas=appSnapshot.segmentStats.find(x=>x.segment==='TCAS-focused')!
+  const lower=appSnapshot.segmentStats.find(x=>x.segment==='Lower Secondary')!
 
   return <div className="p4-stack">
-    <Readout see={see} matters={'TCAS Next-term '+tcas.next+'% vs Ongoing '+ongoing.next+'% — lifecycle ต่างกัน'} decision={move}/>
-    <div className="p4-intro"><div><div className="eyebrow">JOURNEY & OUTCOMES</div><h2>What value does each journey create?</h2><p>จาก learner metric ไปสู่ portfolio implication — ไม่จบที่ KPI</p></div>
-      <div className="p4-filterline">{filters.map(x=><button className={need===x?'active':''} onClick={()=>setNeed(x)} key={x}>{x}</button>)}</div>
+    <Readout
+      see={segment==='ALL' ? `Across ${s.learners} learners, goal-achieved is ${s.goalAchieved}% with average score improvement ${s.scoreImprovement} points.` : `${segment}: Rec→Paid ${s.recToPaid}%, completion ${s.completion}%, goal-achieved ${s.goalAchieved}%.`}
+      matters="Outcome is read with conversion and completion; one KPI alone should not decide a package or learner journey."
+      decision="Use segment-specific evidence and feed weak or unusually strong patterns into package review."
+    />
+    <div className="p4-intro">
+      <div><div className="eyebrow">JOURNEY & OUTCOMES</div><h2>What happens after recommendation?</h2><p>Goal → Assessment → Recommendation → Enrollment → Outcome จาก connected final mock</p></div>
+      <div className="p4-filterline">{filters.map(x=><button className={segment===x?'active':''} onClick={()=>setSegment(x)} key={x}>{x}</button>)}</div>
     </div>
     <div className="p4-metrics">
-      {[['Learners',String(s.cohort.length),'selected synthetic cohort'],['Rec → Paid',s.recPaid+'%','paid within 14d ÷ recommended'],['Next-term',s.next+'%','purchase next term ÷ eligible'],['Cross-subject',s.cross+'%','second subject ÷ active'],['Outcome improved',s.improved+'%','selected outcome improved']].map(([l,v,d])=><article key={l}><span>{l}</span><b>{v}</b><small>{d}</small></article>)}
+      {[['Learners',String(s.learners),'connected learner records'],['Enrollments',String(s.enrollments),'paid enrollment records'],['Rec → Paid',s.recToPaid+'%','recommendation to paid proxy'],['Completion',s.completion+'%','average course completion'],['Goal achieved',s.goalAchieved+'%','available learner outcomes'],['Score improvement',s.scoreImprovement+' pts','average baseline → final change']].map(([l,v,d])=><article key={l}><span>{l}</span><b>{v}</b><small>{d}</small></article>)}
     </div>
     <div className="p4-valuecompare">
-      <article><span>ACHIEVEMENT JOURNEY</span><h3>TCAS / University</h3><div><b>{tcas.recPaid}%</b><small>Rec→Paid</small></div><div><b>{tcas.next}%</b><small>Next-term</small></div><p>Urgency · conversion · exam outcome · brand halo</p></article>
-      <article><span>ONGOING LEARNING</span><h3>School / continuous support</h3><div><b>{ongoing.recPaid}%</b><small>Rec→Paid</small></div><div><b>{ongoing.next}%</b><small>Next-term</small></div><p>Continuation · cross-subject · longer relationship potential</p></article>
+      <article><span>TCAS-FOCUSED</span><h3>{tcas.learners} learners</h3><div><b>{tcas.recToPaid}%</b><small>Rec→Paid</small></div><div><b>{tcas.goalAchieved}%</b><small>Goal achieved</small></div><p>{tcas.completion}% completion · {tcas.scoreImprovement} pts improvement</p></article>
+      <article><span>LOWER SECONDARY</span><h3>{lower.learners} learners</h3><div><b>{lower.recToPaid}%</b><small>Rec→Paid</small></div><div><b>{lower.goalAchieved}%</b><small>Goal achieved</small></div><p>{lower.completion}% completion · {lower.scoreImprovement} pts improvement</p></article>
     </div>
     <div className="p4-distribution">
-      <div><b>430</b><span>synthetic learners</span><small>scenario testing only</small></div>
-      {learnerDistribution.map(d=><div className="p4-distrow" key={d.label+d.detail}><span><b>{d.label}</b><small>{d.detail}</small></span><i><em style={{width:(d.count/2.2)+'%'}}/></i><strong>{d.count}</strong></div>)}
+      <div><b>{appSnapshot.overall.outcomes}</b><span>available outcomes</span><small>from the same connected learner spine</small></div>
+      {appSnapshot.segmentStats.map(d=><div className="p4-distrow" key={d.segment}><span><b>{d.segment}</b><small>{d.enrollments} enrollments</small></span><i><em style={{width:Math.min(100,d.learners/appSnapshot.overall.learners*250)+'%'}}/></i><strong>{d.learners}</strong></div>)}
     </div>
-    <div className="data-note">Synthetic learner / commercial data. Score priors are loosely calibrated to public historical national education benchmarks where applicable.</div>
   </div>
 }
+
 
 function Decisions() {
   const [chosen,setChosen]=useState<Record<string,string>>({})
