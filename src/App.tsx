@@ -12,7 +12,6 @@ const studentNav: { id: StudentPage; label: string }[] = [
   { id: 'gap', label: 'Gap' },
   { id: 'path', label: 'Path' },
   { id: 'support', label: 'Support' },
-  { id: 'outcome', label: 'Outcome' },
 ]
 
 function Home({open}:{open:(mode:Mode)=>void}) {
