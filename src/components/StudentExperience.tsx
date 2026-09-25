@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { intensiveGateMessage, recommendPackages, type LearnerStage, type RecommendationInput } from '../data/recommendationEngine'
 
-export type StudentPage = 'intro' | 'goal' | 'baseline' | 'gap' | 'path' | 'support' | 'outcome'
+export type StudentPage = 'intro' | 'goal' | 'baseline' | 'gap' | 'path' | 'support'
 
 type Props = {
   page: StudentPage
@@ -36,7 +36,7 @@ const defaults: Profile = {
   completedPrerequisite: false,
 }
 
-const order: StudentPage[] = ['intro','goal','baseline','gap','path','support','outcome']
+const order: StudentPage[] = ['intro','goal','baseline','gap','path','support']
 
 function Back({ page, setPage }: Props) {
   const index = order.indexOf(page)
@@ -70,8 +70,7 @@ function Intro({ setPage }: Pick<Props,'setPage'>) {
         ['02','Baseline Test','ทำ test เพื่อดูว่าควรเริ่ม Foundation, Core หรือ Intensive'],
         ['03','Gap Map','สิ่งที่ต้องเติมก่อนพาไปถึงเป้า'],
         ['04','Recommended Path','ลำดับที่ควรทำ ไม่ใช่ลิสต์คอร์สทั้งหมดที่เรามี'],
-        ['05','Support','เพิ่มความช่วยเหลือตามความซับซ้อน ความต่อเนื่อง และ stakes ของเป้าหมาย'],
-        ['06','Outcome','ผลจริงกลับมา update gap, path และ portfolio learning'],
+        ['05','Support','ดู support เพิ่มเติมเมื่อ learner ต้องการความช่วยเหลือมากขึ้น'],
       ].map(([n,t,c])=><article className="explain-card" key={n}><span>{n}</span><b>{t}</b><p>{c}</p></article>)}
     </div>
   </section>
@@ -300,37 +299,8 @@ function Support({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
       <div><span>HUMAN INTERVENTION</span><b>{humanRecommended?'Compass recommends human support':'Available on request'}</b></div>
     </div>
 
-    <div className="logic-callout"><b>Same Compass, escalating support.</b><span>Compass สามารถ flag human support ได้ และ learner ก็ขอคุยกับคนได้เองเสมอ</span></div>
-    <div className="end"><button className="primary" onClick={()=>setPage('outcome')}>ดู Outcome Loop →</button></div>
-  </section>
-}
-
-function Outcome({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
-  const baseline=profile.baselineScore ?? 0
-  const latest=Math.min(100,baseline+12)
-  return <section className="page">
-    <Back page="outcome" setPage={setPage}/>
-    <div className="eyebrow">STEP 6 · OUTCOME</div>
-    <h1 className="section-title">ผลเปลี่ยน<br/>Recommendation ก็เปลี่ยน</h1>
-    <div className="outcome-board">
-      <div className="score-change"><span>Baseline</span><b>{baseline}</b><i>→</i><span>Latest assessment</span><b>{latest}</b></div>
-      <div className="outcome-copy"><b>Outcome closes the individual loop</b><p>เมื่อ baseline / outcome เปลี่ยน ระบบจะประเมิน eligibility และ path ใหม่ แทนที่จะขาย package เดิมซ้ำโดยไม่ดู learner state</p></div>
-    </div>
-
-    <div className="feedback-loops">
-      <article>
-        <span>INDIVIDUAL LOOP</span>
-        <div className="mini-loop"><b>Outcome</b><i>→</i><b>Updated Gap</b><i>→</i><b>Updated Path</b></div>
-        <p>ใช้ผลของ learner คนนี้ปรับเส้นทางรอบถัดไป</p>
-      </article>
-      <article>
-        <span>PORTFOLIO LOOP</span>
-        <div className="mini-loop"><b>Aggregated Outcomes</b><i>→</i><b>Portfolio Learning</b><i>→</i><b>Better Recommendations</b></div>
-        <p>เมื่อรวม outcome หลายคน ธุรกิจเห็นว่า package / routing แบบไหนสร้างผลจริง แล้วใช้ evidence นั้นปรับ Compass</p>
-      </article>
-    </div>
-
-    <div className="end"><button className="secondary" onClick={()=>setPage('goal')}>ลอง profile ใหม่</button></div>
+    <div className="logic-callout"><b>Support is optional.</b><span>เลือกเพิ่ม human support เมื่อจำเป็น แล้วกลับไปใช้ Recommended Path เดิมต่อใน MyPath+</span></div>
+    <div className="end"><button className="primary" onClick={()=>setPage('path')}>กลับไป Recommended Path →</button></div>
   </section>
 }
 
@@ -342,7 +312,6 @@ export default function StudentExperience({page,setPage}:Props) {
     if(page==='baseline') return <Baseline profile={profile} setProfile={setProfile} setPage={setPage}/>
     if(page==='gap') return <Gap profile={profile} setPage={setPage}/>
     if(page==='path') return <Path profile={profile} setPage={setPage}/>
-    if(page==='support') return <Support profile={profile} setPage={setPage}/>
-    return <Outcome profile={profile} setPage={setPage}/>
+    return <Support profile={profile} setPage={setPage}/>
   },[page,profile,setPage])
 }
