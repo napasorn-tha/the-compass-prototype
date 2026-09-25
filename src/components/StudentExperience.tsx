@@ -66,11 +66,12 @@ function Intro({ setPage }: Pick<Props,'setPage'>) {
     </div>
     <div className="learner-explain-grid">
       {[
-        ['01','Goal & Context','ช่วงชั้น เป้าหมาย โรงเรียน/คณะ เวลา งบ และรูปแบบ support'],
-        ['02','Baseline Check','ประเมิน readiness และใช้เป็น prerequisite gate'],
-        ['03','Gap Map','เห็นว่าต้องเติมอะไร ก่อนเข้าเส้นทางที่เข้มข้นขึ้น'],
-        ['04','Top 3 Packages','Best Match · Best Value · More Support'],
-        ['05','Outcome','ผลจริงกลับมา update learner path และ portfolio'],
+        ['01','Goal & Context','ช่วงชั้น เป้าหมาย โรงเรียน/คณะ เวลา งบ และข้อจำกัด'],
+        ['02','Baseline','ประเมิน readiness และใช้เป็น prerequisite gate'],
+        ['03','Gap Map','สิ่งที่ต้องเติมก่อนพาไปถึงเป้า'],
+        ['04','Recommended Path','ลำดับที่ควรทำ ไม่ใช่ลิสต์คอร์สทั้งหมดที่เรามี'],
+        ['05','Support','เพิ่มความช่วยเหลือตามความซับซ้อน ความต่อเนื่อง และ stakes ของเป้าหมาย'],
+        ['06','Outcome','ผลจริงกลับมา update gap, path และ portfolio learning'],
       ].map(([n,t,c])=><article className="explain-card" key={n}><span>{n}</span><b>{t}</b><p>{c}</p></article>)}
     </div>
   </section>
@@ -140,7 +141,7 @@ function Gap({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
       <article className={profile.completedPrerequisite?'gap-card good':'gap-card medium'}><span>PREREQUISITE</span><b>Prior OnDemand</b><strong>{profile.completedPrerequisite?'PASS':'OPEN'}</strong><p>ใช้ร่วมกับ baseline เพื่อ unlock intensive route</p></article>
     </div>
     <div className="logic-callout"><b>Eligibility before intensity.</b><span>ถ้ายังไม่ผ่าน prerequisite gate ระบบจะไม่ยก intensive / advanced package เป็น Best Match</span></div>
-    <div className="end"><button className="primary" onClick={()=>setPage('path')}>ดู Top 3 Packages →</button></div>
+    <div className="end"><button className="primary" onClick={()=>setPage('path')}>ดู Recommended Path →</button></div>
   </section>
 }
 
@@ -157,38 +158,84 @@ function Path({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
     completedPrerequisite:profile.completedPrerequisite,
   }
   const recs=recommendPackages(input)
+  const primary=recs[0]
+  const alternatives=recs.slice(1)
   return <section className="page">
     <Back page="path" setPage={setPage}/>
-    <div className="eyebrow">STEP 4 · PACKAGE RECOMMENDATION</div>
+    <div className="eyebrow">STEP 4 · RECOMMENDED PATH</div>
     <div className="section-head compact">
-      <div><h1 className="section-title">Your Compass</h1><p className="lead">สามคำตอบที่ทำหน้าที่ต่างกัน — ไม่ใช่ catalog dump</p></div>
+      <div>
+        <h1 className="section-title">Your Compass</h1>
+        <p className="lead">ลำดับที่ควรทำ ไม่ใช่ลิสต์คอร์สทั้งหมดที่เรามี</p>
+      </div>
       <button className="edit-link" onClick={()=>setPage('goal')}>Edit context</button>
     </div>
     <div className="profile-strip"><span>{profile.goal}</span><span>Baseline {profile.score}</span><span>{profile.budgetBand}</span><span>{profile.supportNeed} support</span></div>
-    <div className="path-line">
-      {recs.map((r,i)=><article key={r.slot}>
-        <span>0{i+1} · {r.slot.toUpperCase()}</span>
+
+    {primary && <article className="primary-path-card">
+      <div className="primary-path-label">PRIMARY RECOMMENDED PATH · BEST MATCH</div>
+      <div className="primary-path-body">
+        <div>
+          <span>01 · BEST MATCH</span>
+          <h2>{primary.name}</h2>
+          <strong>฿{primary.price.toLocaleString()} · Fit {primary.fit}%</strong>
+        </div>
+        <p>{primary.reason}</p>
+      </div>
+    </article>}
+
+    <div className="path-alternatives">
+      {alternatives.map((r,i)=><article key={r.slot}>
+        <span>0{i+2} · ALTERNATIVE · {r.slot.toUpperCase()}</span>
         <b>{r.name}</b>
         <strong>฿{r.price.toLocaleString()} · Fit {r.fit}%</strong>
         <p>{r.reason}</p>
       </article>)}
     </div>
+
     <div className="logic-callout"><b>Prerequisite gate</b><span>{intensiveGateMessage(input)}</span></div>
-    <div className="end"><button className="primary" onClick={()=>setPage('support')}>ดู support context →</button></div>
+    <div className="end"><button className="primary" onClick={()=>setPage('support')}>ต่อไป: Support →</button></div>
   </section>
 }
 
 function Support({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
+  const humanRecommended = profile.supportNeed==='High' || profile.goal==='ยังไม่แน่ใจ' || profile.budgetBand==='<5,000'
   return <section className="page">
     <Back page="support" setPage={setPage}/>
-    <div className="eyebrow">STEP 5 · SUPPORT CONTEXT</div>
-    <h1 className="section-title">Package fit ต้องอ่านคู่กับ<br/>วิธีเรียนและ support</h1>
-    <div className="support-grid">
-      <article><small>DELIVERY</small><b>{profile.supportMode}</b><p>รูปแบบการเรียนที่ learner เลือก</p></article>
-      <article className="featured"><small>SUPPORT NEED</small><b>{profile.supportNeed}</b><p>ใช้แยก Best Match กับ More Support</p></article>
-      <article><small>TIME</small><b>{profile.time}</b><p>constraint ที่มีผลต่อ path</p></article>
-      <article><small>BUDGET</small><b>{profile.budgetBand}</b><p>Best Value ต้องยัง fit ไม่ใช่แค่ถูกที่สุด</p></article>
+    <div className="eyebrow">STEP 5 · SUPPORT</div>
+    <h1 className="section-title">ช่วยเท่าที่ต้องช่วย<br/><span>และ escalate เมื่อโจทย์ซับซ้อนขึ้น</span></h1>
+    <p className="lead">Support intensity เพิ่มตาม problem complexity, persistence, goal stakes และ human need — Advisor เป็น intervention layer หนึ่ง ไม่ใช่ step ถัดจาก Learner</p>
+
+    <div className="support-ladder">
+      <article>
+        <span>01 · INSTANT SUPPORT</span>
+        <b>Online Solution + AI Quick Help</b>
+        <p>ตอบทันที อธิบาย concept และช่วย triage คำถามก่อนส่งต่อ</p>
+        <small>AI layer = prototype concept only</small>
+      </article>
+      <article>
+        <span>02 · ACADEMIC CLEAR</span>
+        <b>Human academic escalation</b>
+        <p>เมื่อคำถามยัง unresolved หรือ confidence ต่ำ ให้ทีมวิชาการรับช่วงต่อพร้อม context</p>
+      </article>
+      <article className={profile.supportNeed==='High'?'support-watch':''}>
+        <span>03 · PERSONAL LEARNING SUPPORT</span>
+        <b>1-on-1 TA / Tutor</b>
+        <p>สำหรับ gap ที่เกิดซ้ำ คะแนนไม่ขยับ หรือ learner ต้องการ feedback ต่อเนื่อง</p>
+      </article>
+      <article className={humanRecommended?'support-action':''}>
+        <span>04 · STRATEGIC / FAMILY SUPPORT</span>
+        <b>Advisor / Family Butler</b>
+        <p>สำหรับเป้าหมาย stakes สูง ความไม่แน่ใจ ผู้ปกครอง หรือการวาง pathway ระยะยาว</p>
+      </article>
     </div>
+
+    <div className="support-context-line">
+      <div><span>YOUR CONTEXT</span><b>{profile.supportNeed} support · {profile.supportMode} · {profile.time}</b></div>
+      <div><span>HUMAN INTERVENTION</span><b>{humanRecommended?'Compass recommends human support':'Available on request'}</b></div>
+    </div>
+
+    <div className="logic-callout"><b>Same Compass, escalating support.</b><span>Compass สามารถ flag human support ได้ และ learner ก็ขอคุยกับคนได้เองเสมอ</span></div>
     <div className="end"><button className="primary" onClick={()=>setPage('outcome')}>ดู Outcome Loop →</button></div>
   </section>
 }
@@ -197,12 +244,26 @@ function Outcome({profile,setPage}:{profile:Profile;setPage:Props['setPage']}) {
   const latest=Math.min(100,profile.score+12)
   return <section className="page">
     <Back page="outcome" setPage={setPage}/>
-    <div className="eyebrow">STEP 6 · OUTCOME FEEDBACK</div>
+    <div className="eyebrow">STEP 6 · OUTCOME</div>
     <h1 className="section-title">ผลเปลี่ยน<br/>Recommendation ก็เปลี่ยน</h1>
     <div className="outcome-board">
       <div className="score-change"><span>Baseline</span><b>{profile.score}</b><i>→</i><span>Illustrative latest</span><b>{latest}</b></div>
-      <div className="outcome-copy"><b>Outcome closes the loop</b><p>เมื่อ baseline / outcome เปลี่ยน ระบบจะประเมิน eligibility และ Top 3 ใหม่ แทนที่จะขาย package เดิมซ้ำโดยไม่ดู learner state</p><div className="mini-loop"><span>Outcome</span><i>→</i><span>Updated Gap</span><i>→</i><span>Updated Top 3</span><i>→</i><span>Portfolio evidence</span></div></div>
+      <div className="outcome-copy"><b>Outcome closes the individual loop</b><p>เมื่อ baseline / outcome เปลี่ยน ระบบจะประเมิน eligibility และ path ใหม่ แทนที่จะขาย package เดิมซ้ำโดยไม่ดู learner state</p></div>
     </div>
+
+    <div className="feedback-loops">
+      <article>
+        <span>INDIVIDUAL LOOP</span>
+        <div className="mini-loop"><b>Outcome</b><i>→</i><b>Updated Gap</b><i>→</i><b>Updated Path</b></div>
+        <p>ใช้ผลของ learner คนนี้ปรับเส้นทางรอบถัดไป</p>
+      </article>
+      <article>
+        <span>PORTFOLIO LOOP</span>
+        <div className="mini-loop"><b>Aggregated Outcomes</b><i>→</i><b>Portfolio Learning</b><i>→</i><b>Better Recommendations</b></div>
+        <p>เมื่อรวม outcome หลายคน ธุรกิจเห็นว่า package / routing แบบไหนสร้างผลจริง แล้วใช้ evidence นั้นปรับ Compass</p>
+      </article>
+    </div>
+
     <div className="end"><button className="secondary" onClick={()=>setPage('goal')}>ลอง profile ใหม่</button></div>
   </section>
 }
