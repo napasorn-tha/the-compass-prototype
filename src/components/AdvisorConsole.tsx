@@ -53,8 +53,8 @@ function advisorContext(item:(typeof appSnapshot.learnerCases)[number]) {
 }
 
 export default function AdvisorConsole() {
-  const cases=appSnapshot.learnerCases.slice(0,4)
   const assisted=appSnapshot.learnerCases.filter(x=>x.advisorNeeded)
+  const cases=assisted.slice(0,4)
   const purchased=assisted.filter(x=>x.accepted)
   const conversion=assisted.length?Math.round(purchased.length/assisted.length*100):0
   const [overrideReason,setOverrideReason]=useState<Record<string,string>>({})
