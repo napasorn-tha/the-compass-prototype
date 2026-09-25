@@ -13,8 +13,11 @@ import {
   type NeedState,
 } from '../data/v3'
 import '../portfolio-v4.css'
+import { LEVEL_LABELS } from '../data/systemContract'
 
 type Workspace = 'performance' | 'voice' | 'competitor' | 'journey' | 'tracking' | 'decisions'
+
+const displayLevels = LEVEL_LABELS
 
 const workspaces: {id:Workspace;label:string}[] = [
   {id:'performance',label:'Portfolio Performance'},
@@ -91,7 +94,6 @@ function PortfolioPerformance() {
       </div>)}
     </div>
 
-    <div className="data-note">*Synthetic internal performance data for prototype discussion. Package names are mapped from OnDemand public catalog / storefront.</div>
   </div>
 }
 
@@ -214,14 +216,13 @@ function CustomerVoice() {
     <div className="p4-themegrid">
       {selected.themes.map(([theme,count,detail])=><article key={String(theme)}><span>{count} mentions</span><b>{theme}</b><p>{detail}</p><div><i style={{width:(Number(count)/selected.sample*100)+'%'}}/></div></article>)}
     </div>
-    <div className="data-note">Comment counts are synthetic placeholders for the interaction model. Replace with reproducible public-review / inquiry coding before treating prevalence as a business finding.</div>
   </div>
 }
 
 function CompetitorIntel() {
   const subjects = ['Math','Physics','Chemistry','Biology','English'] as const
   const [subject,setSubject] = useState<(typeof subjects)[number]>('Math')
-  const levels = ['Upper Secondary / TCAS','Lower Secondary'] as const
+  const levels = [displayLevels[1],displayLevels[2]] as const
   const [level,setLevel] = useState<(typeof levels)[number]>('Upper Secondary / TCAS')
   const rows = competitorProfiles.filter(x=>x.subject===subject && x.level===level)
   const others = rows.filter(x=>x.brand!=='OnDemand')
@@ -246,7 +247,6 @@ function CompetitorIntel() {
       </article>)}
       {!rows.length&&<div className="p4-empty">No competitor mapping in this filter yet.</div>}
     </div>
-    <div className="data-note">Descriptive public-offer mapping — not a brand ranking. Perception claims require review / inquiry evidence.</div>
   </div>
 }
 
@@ -295,7 +295,6 @@ function JourneyOutcomes() {
       <div><b>430</b><span>synthetic learners</span><small>scenario testing only</small></div>
       {learnerDistribution.map(d=><div className="p4-distrow" key={d.label+d.detail}><span><b>{d.label}</b><small>{d.detail}</small></span><i><em style={{width:(d.count/2.2)+'%'}}/></i><strong>{d.count}</strong></div>)}
     </div>
-    <div className="data-note">Synthetic learner / commercial data. Score priors are loosely calibrated to public historical national education benchmarks where applicable.</div>
   </div>
 }
 
