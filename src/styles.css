@@ -30,3 +30,35 @@ footer{padding:14px 0 40px;color:#777;font-size:11px}
 .recommend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.recommend-grid article{background:#fff;border:1px solid #d4d4d2;border-top:5px solid #202124;padding:20px}.recommend-grid article.featured{border-top-color:var(--red)}.recommend-grid article>span{font-size:10px;font-weight:900;color:var(--red)}.recommend-grid h2{font-size:21px;line-height:1.15;min-height:48px}.recommend-price{font-size:28px;font-weight:900;margin:12px 0}.fit-row{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:8px}.fit-row>b{font-size:11px}.fit-row i{height:8px;background:#eee}.fit-row em{display:block;height:100%;background:var(--red)}.recommend-grid p{color:#666;min-height:50px}.recommend-grid small{color:#888}
 .advisor-gate{border-top:1px solid #ddd;margin-top:12px;padding-top:10px}.advisor-gate span,.advisor-gate b{display:block}.advisor-gate span{font-size:9px;color:#777;font-weight:900}.advisor-gate b{font-size:11px;margin-top:4px}
 @media(max-width:820px){.recommend-grid{grid-template-columns:1fr}.gate-banner{align-items:flex-start;flex-direction:column}}
+
+/* VISUAL SYSTEM V5 — final polish layer */
+:root{--red:#d71920;--ink:#181818;--muted:#6c6b68;--paper:#f5f4f1;--card:#fff;--line:#e4e1dc;--soft:#efede8;--radius:14px;--shadow:0 10px 30px rgba(24,24,24,.055);--max:1320px}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
+.topbar{background:rgba(250,249,247,.94);border-bottom:1px solid rgba(30,30,30,.08);backdrop-filter:blur(18px)}
+.nav{min-height:74px}
+.brand-button,.mode-switch button,.desktop-nav button,.workspace-tabs button,.choice-row button,.primary,.secondary,.back-btn,.edit-link{transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease}
+.brand-button:hover,.mode-switch button:hover,.desktop-nav button:hover,.workspace-tabs button:hover,.choice-row button:hover,.primary:hover,.secondary:hover{transform:translateY(-1px)}
+.prototype-badge{border-radius:999px;border-color:var(--line);background:#fff;padding:6px 10px}
+.mode-switch{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.mode-switch button{border-right:1px solid var(--line);padding:10px 14px}.mode-switch button.active{background:var(--ink)}
+.desktop-nav button{border-radius:8px}.desktop-nav button.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.page{padding:52px 0 82px}
+.eyebrow{font-size:10px;letter-spacing:.16em}
+.section-title{font-weight:850}.lead{color:#595854;line-height:1.5}
+.primary,.secondary,.back-btn,.edit-link{border-radius:10px;padding:12px 17px}.primary{box-shadow:0 7px 16px rgba(215,25,32,.16)}.secondary,.back-btn,.edit-link{border-color:var(--line);box-shadow:0 2px 7px rgba(0,0,0,.025)}
+.home-hero{padding:28px 0 12px}.home-hero p{line-height:1.55}.home-number,.section-number{color:#dedbd6}
+.three-layer{gap:14px}.three-layer button{border:1px solid var(--line);border-top:0;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;position:relative;overflow:hidden}.three-layer button:before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:var(--ink)}.three-layer button:last-child:before{background:var(--red)}.three-layer button:hover{border-color:#cac5be}
+.home-principle{border-radius:12px;padding:17px 20px}
+.explain-card,.form-board,.quiz-panel,.baseline-summary div,.gap-card,.path-line article,.support-grid article,.score-change,.outcome-copy,.board-card,.case-card{border-color:var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.explain-card{border-top:0;position:relative}.explain-card:before{content:"";position:absolute;left:0;top:0;height:4px;width:100%;background:var(--ink);border-radius:14px 14px 0 0}.explain-card:first-child:before{background:var(--red)}
+.form-board{padding:14px 24px}.field-block{padding:20px 0;border-color:#ece9e4}.choice-row{gap:8px}.choice-row button{border-radius:9px;border-color:var(--line);padding:10px 12px}.choice-row button.selected{border:1px solid var(--red);background:#fff5f5;padding:10px 12px;box-shadow:0 0 0 3px rgba(215,25,32,.06)}
+.quiz-panel{border-top:0;position:relative}.quiz-panel:before{content:"";position:absolute;left:0;top:0;width:5px;height:100%;background:var(--red);border-radius:14px 0 0 14px}
+.answer-stack button{border-radius:10px;border-color:var(--line);padding:15px}.answer-stack button.selected{border:1px solid var(--red);padding:15px}
+.gap-card{border-top:0;position:relative;overflow:hidden}.gap-card:before{content:"";position:absolute;left:0;top:0;width:5px;height:100%;background:#aaa}.gap-card.urgent:before{background:var(--red)}.gap-card.medium:before{background:#b7791f}.gap-card.good:before{background:#2f855a}
+.logic-callout,.gate-banner{border-radius:12px}.recommend-grid{gap:12px}.recommend-grid article{border-color:var(--line);border-top:0;border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden}.recommend-grid article:before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:var(--ink)}.recommend-grid article.featured:before{background:var(--red)}.recommend-grid h2{margin-top:12px}.fit-row i{border-radius:999px;overflow:hidden}.support-grid{gap:12px}.support-grid article{border-top:0}.support-grid article.featured{box-shadow:0 0 0 1px var(--red),var(--shadow)}
+.board-card,.case-card{padding:22px}.board-title{border-radius:0 0 8px 0}.case-board{gap:14px}.case-grid{border-color:var(--line)}.case-grid>div{border-color:var(--line)}
+.workspace-tabs{gap:7px;border-bottom:0;margin-top:30px;padding:6px;background:#ebe8e2;border-radius:12px;width:max-content;max-width:100%}.workspace-tabs button{border:0;border-radius:8px;background:transparent;padding:10px 13px;color:#676661}.workspace-tabs button.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.workspace-shell{padding-top:20px}
+footer{border-top:1px solid var(--line);margin-top:16px;padding-top:18px;line-height:1.5}
+@media(max-width:720px){.workspace-tabs{width:100%;overflow:auto;flex-wrap:nowrap}.workspace-tabs button{white-space:nowrap}.page{padding-top:34px}.section-title{font-size:42px}.hero-title{font-size:48px}}
