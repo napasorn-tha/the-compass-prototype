@@ -39,17 +39,26 @@ const CM_ASSUMPTIONS = {
 } as const
 
 function estimateContributionMargin() {
-  const paid=appSnapshot.learnerCases.filter(x=>x.accepted && x.purchasePrice>0)
-  const revenue=paid.reduce((sum,x)=>sum+x.purchasePrice,0)
-  const contribution=paid.reduce((sum,x)=>{
-    const delivery=CM_ASSUMPTIONS.delivery[x.learningMode as keyof typeof CM_ASSUMPTIONS.delivery] ?? 0.20
-    const channel=CM_ASSUMPTIONS.channel[x.purchaseChannel as keyof typeof CM_ASSUMPTIONS.channel] ?? 0.06
-    const support=CM_ASSUMPTIONS.support[x.supportTier as keyof typeof CM_ASSUMPTIONS.support] ?? 0.08
-    return sum + x.purchasePrice * Math.max(0,1-delivery-channel-support)
+  const revenue=appSnapshot.overall.revenue
+  const deliveryCost=appSnapshot.deliveryStats.reduce((sum,x)=>{
+    const rate=CM_ASSUMPTIONS.delivery[x.mode as keyof typeof CM_ASSUMPTIONS.delivery] ?? 0.20
+    return sum+x.revenue*rate
   },0)
+  const channelCost=appSnapshot.channelStats.reduce((sum,x)=>{
+    const rate=CM_ASSUMPTIONS.channel[x.name as keyof typeof CM_ASSUMPTIONS.channel] ?? 0.06
+    return sum+x.revenue*rate
+  },0)
+  const supportCost=appSnapshot.supportStats.reduce((sum,x)=>{
+    const rate=CM_ASSUMPTIONS.support[x.name as keyof typeof CM_ASSUMPTIONS.support] ?? 0.08
+    return sum+x.revenue*rate
+  },0)
+  const contribution=Math.max(0,revenue-deliveryCost-channelCost-supportCost)
   return {
     amount:Math.round(contribution),
-    rate:revenue?Math.round(contribution/revenue*100):0,
+    rate:revenue?Math.round(contribution/revenue*1000)/10:0,
+    deliveryCost:Math.round(deliveryCost),
+    channelCost:Math.round(channelCost),
+    supportCost:Math.round(supportCost),
   }
 }
 
@@ -70,26 +79,10 @@ function PortfolioPerformance({openDecisions}:{openDecisions:()=>void}) {
   const topPackage=[...appSnapshot.packageStats].sort((a,b)=>b.revenue-a.revenue)[0]
   const topGeo=[...appSnapshot.geographyStats].sort((a,b)=>b.revenue-a.revenue)[0]
 
-  const salesChannels=Object.values(appSnapshot.learnerCases.filter(x=>x.accepted).reduce((acc,item)=>{
-    const key=item.purchaseChannel || 'Unknown'
-    const current=acc[key] || {name:key,enrollments:0,revenue:0,branches:new Set<string>()}
-    current.enrollments+=1
-    current.revenue+=item.purchasePrice
-    if(item.branchName) current.branches.add(item.branchName)
-    acc[key]=current
-    return acc
-  },{} as Record<string,{name:string;enrollments:number;revenue:number;branches:Set<string>}>))
-    .sort((a,b)=>b.revenue-a.revenue)
-
-  const demandProvinces=Object.values(appSnapshot.learnerCases.reduce((acc,item)=>{
-    const key=item.province || item.region
-    const current=acc[key] || {name:key,learners:0,region:item.region}
-    current.learners+=1
-    acc[key]=current
-    return acc
-  },{} as Record<string,{name:string;learners:number;region:string}>))
-    .sort((a,b)=>b.learners-a.learners)
-    .slice(0,6)
+  const salesChannels=appSnapshot.channelStats
+  const demandRegions=appSnapshot.regionDemandStats
+  const demandProvinces=appSnapshot.provinceDemandStats.slice(0,8)
+  const topBranches=[...appSnapshot.branchStats].sort((a,b)=>b.revenue-a.revenue).slice(0,6)
 
   return <div className="p4-stack">
     <div className="p4-intro">
@@ -107,7 +100,7 @@ function PortfolioPerformance({openDecisions}:{openDecisions:()=>void}) {
       <article><span>Learning Outcome</span><b>{o.goalAchieved}%</b><small>goal achieved among available outcomes</small></article>
     </div>
 
-    <div className="p4-estimate-note">EST. CONTRIBUTION MARGIN · Directional estimate based on delivery mode, channel and support intensity. Not accounting actuals.</div>
+    <div className="p4-estimate-note">EST. CONTRIBUTION MARGIN · Directional estimate across the full 414-enrollment snapshot using explicit variable-cost assumptions by delivery mode, purchase channel and support tier. Not accounting actuals. Public company net margin is not used as contribution margin.</div>
 
     <div className="p4-story-label"><span>02 · WHERE?</span><b>Change the lens before interpreting the signal</b></div>
     <div className="p4-filterline">
@@ -125,13 +118,14 @@ function PortfolioPerformance({openDecisions}:{openDecisions:()=>void}) {
 
     {lens==='Geography' && <div className="p4-geo-dual">
       <article>
-        <div className="p4-geo-head"><span>WHERE DEMAND COMES FROM</span><b>Learner geography</b></div>
-        <div className="p4-geo-clusters">{appSnapshot.geographyStats.map(x=><div key={x.cluster}><b>{x.cluster}</b><span>{x.learners} learners</span><small>{x.anywhereShare}% Anywhere preference · {x.completion}% completion</small></div>)}</div>
-        <div className="p4-geo-detail"><span>TOP PROVINCES IN SNAPSHOT</span>{demandProvinces.map(x=><b key={x.name}>{x.name} · {x.learners}</b>)}</div>
+        <div className="p4-geo-head"><span>WHERE DEMAND COMES FROM</span><b>Learner geography · full 430-learner snapshot</b></div>
+        <div className="p4-geo-clusters">{demandRegions.map(x=><div key={x.name}><b>{x.name}</b><span>{x.count} learners</span><small>{x.share}% of learner base</small></div>)}</div>
+        <div className="p4-geo-detail"><span>TOP PROVINCES</span>{demandProvinces.map(x=><b key={x.name}>{x.name} · {x.count}</b>)}</div>
       </article>
       <article>
-        <div className="p4-geo-head"><span>WHERE SALES HAPPEN</span><b>Purchase channel / branch evidence</b></div>
-        <div className="p4-geo-clusters">{salesChannels.map(x=><div key={x.name}><b>{x.name}</b><span>{x.enrollments} enrollments · {thb(x.revenue)}</span><small>{x.branches.size?Array.from(x.branches).slice(0,3).join(' · '):'No branch assigned — keep as non-branch sale'}</small></div>)}</div>
+        <div className="p4-geo-head"><span>WHERE SALES HAPPEN</span><b>Purchase channel + branch location · full 414-enrollment snapshot</b></div>
+        <div className="p4-geo-clusters">{salesChannels.map(x=><div key={x.name}><b>{x.name}</b><span>{x.count} enrollments · {thb(x.revenue)}</span><small>{x.revenueShare}% of revenue · AOV {thb(x.aov)}</small></div>)}</div>
+        <div className="p4-geo-detail"><span>TOP BRANCH-ATTRIBUTED SALES</span>{topBranches.map(x=><b key={x.branchId}>{x.branchName} · {thb(x.revenue)}</b>)}</div>
       </article>
     </div>}
 
