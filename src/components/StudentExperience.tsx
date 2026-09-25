@@ -1,359 +1,247 @@
-import { useEffect, useMemo, useState } from 'react'
-import { defaultProfile, diagnosticQuestions, onboarding, StudentProfile } from '../data/mock'
+import { useMemo, useState } from 'react'
 
-export type StudentPage = 'home' | 'about' | 'diagnostic' | 'compass' | 'support' | 'progress'
+export type StudentPage = 'intro' | 'goal' | 'baseline' | 'gap' | 'path' | 'support' | 'outcome'
 
 type Props = {
   page: StudentPage
   setPage: (page: StudentPage) => void
 }
 
-const pathBySegment: Record<StudentProfile['segment'], [string, string, string, string][]> = {
-  'ประถม': [
-    ['Foundation', 'ปิด gap หลักให้พื้นฐานแน่น', '4–6 สัปดาห์', 'ทำโจทย์พื้นฐานได้สม่ำเสมอ'],
-    ['Guided Practice', 'ฝึกสั้นแต่ต่อเนื่อง', '6 สัปดาห์', 'accuracy ดีขึ้นต่อเนื่อง'],
-    ['Confidence Check', 'เช็กความเข้าใจแบบไม่กดดัน', 'ทุก 2 สัปดาห์', 'เห็น progress ที่อธิบายได้'],
-    ['Next Module', 'ขยับระดับเมื่อพร้อม', 'adaptive', 'path เปลี่ยนตามผลล่าสุด'],
-  ],
-  'ม.ต้น': [
-    ['Foundation', 'ปิด concept gap รายบท', '4 สัปดาห์', 'core concept ≥ 75%'],
-    ['Core', 'เรียนตามชั้น + จุดอ่อน', '8 สัปดาห์', 'topic score ≥ 65%'],
-    ['Exam Practice', 'ฝึกข้อสอบโรงเรียน / สอบเข้า', '6 สัปดาห์', 'timed consistency'],
-    ['Bridge', 'เตรียมขึ้นระดับถัดไป', 'adaptive', 'พร้อมต่อยอด ม.ปลาย'],
-  ],
-  'ม.ปลาย / TCAS': [
-    ['Foundation', 'ปิด gap ก่อน', '4 สัปดาห์', 'พื้นฐาน ≥ 75%'],
-    ['Core', 'เชื่อม concept กับข้อสอบ', '8 สัปดาห์', 'topic mock ≥ 65%'],
-    ['Practice', 'ทำโจทย์จับเวลา + error review', '6 สัปดาห์', 'consistency 3 ชุดติด'],
-    ['Mock', 'จำลองสอบและอัปเดต path', 'ต่อเนื่อง', 'result feeds back to Compass'],
-  ],
-  'International / Bilingual / GED': [
-    ['Bridge', 'เชื่อม curriculum เดิมกับภาษา / ระบบไทย', '4 สัปดาห์', 'เข้าใจ terminology + exam format'],
-    ['Core', 'เติม subject gap ที่จำเป็น', '6–8 สัปดาห์', 'core competency stable'],
-    ['Navigation', 'จัดเส้นทาง admission / equivalency', 'ต่อเนื่อง', 'รู้ requirement และ next step'],
-    ['Practice', 'ซ้อม format ที่ต้องใช้จริง', 'adaptive', 'outcome feeds back to path'],
-  ],
+type Profile = {
+  stage: string
+  need: string
+  goal: string
+  score: number
+  time: string
+  support: string
 }
 
-const tiers = [
-  ['FREE / ENTRY', 'Diagnostic / Starter', 'อยากเริ่มรู้จุดอ่อนก่อน'],
-  ['CORE', 'Recommended path', 'เรียนตาม path ได้ด้วยตัวเอง'],
-  ['PLUS', 'Core + Consult', 'อยากมีครูช่วยตอนติด'],
-  ['PREMIUM', 'Full support', 'ครอบครัวที่ต้องการ advisor ดู journey'],
-] as const
-
-function Home({ setPage }: Pick<Props, 'setPage'>) {
-  return (
-    <section className="page">
-      <div className="section-head hero-head">
-        <div>
-          <div className="eyebrow">01 · Learner journey</div>
-          <h1 className="hero-title">From Catalog<br />to <span>Compass</span></h1>
-          <p className="lead">
-            ไม่เริ่มจาก “มีคอร์สอะไรขาย?” แต่เริ่มจาก “นักเรียนคนนี้ควรไปทางไหน?”
-          </p>
-          <div className="actions">
-            <button className="primary" onClick={() => setPage('about')}>เริ่มค้นหาเส้นทาง</button>
-            <button className="secondary" onClick={() => setPage('compass')}>ดูตัวอย่าง Compass</button>
-          </div>
-        </div>
-        <div className="section-number">01</div>
-      </div>
-
-      <div className="hero-board">
-        <article className="board-card hero-red">
-          <div className="board-title red">ONE ENGINE</div>
-          <h2>Goal → Diagnostic → Path → Outcome → Better Match</h2>
-          <div className="journey-flow">
-            {['เป้าหมาย', 'Diagnostic', 'Recommended Path', 'Learn / Practice', 'Outcome', 'Better Match'].map((item, index) => (
-              <div className="journey-node" key={item}>
-                <span>{String(index + 1).padStart(2, '0')}</span><b>{item}</b>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="board-card">
-          <div className="board-title black">MULTIPLE SEGMENTS</div>
-          <h2>Compass เดียว ไม่ได้แปลว่า journey เดียว</h2>
-          <div className="segment-cards">
-            <div><b>ประถม</b><span>Foundation + parent view</span></div>
-            <div><b>ม.ต้น</b><span>Core + school / entrance exams</span></div>
-            <div><b>ม.ปลาย / TCAS</b><span>Goal + diagnostic + mock</span></div>
-            <div><b>International / GED</b><span>Bridge + navigation</span></div>
-          </div>
-        </article>
-      </div>
-
-      <div className="statement-banner">
-        <b>LESS CHOICE → CLEARER CHOICE</b>
-        <span>Student sees the path. Advisor sees the reason. Portfolio lead sees the signal.</span>
-      </div>
-    </section>
-  )
+const defaults: Profile = {
+  stage: 'Upper Secondary',
+  need: 'TCAS / University',
+  goal: 'วิศวะ',
+  score: 58,
+  time: '5–7 ชม./สัปดาห์',
+  support: 'Hybrid',
 }
 
-function About({
-  profile,
-  setProfile,
-  setPage,
-}: {
-  profile: StudentProfile
-  setProfile: (profile: StudentProfile) => void
-  setPage: Props['setPage']
-}) {
-  const [step, setStep] = useState(0)
-  const item = onboarding[step]
-  const key = item.key
+const order: StudentPage[] = ['intro','goal','baseline','gap','path','support','outcome']
 
-  const select = (option: string) => {
-    if (key === 'subjects') {
-      const next = profile.subjects.includes(option)
-        ? profile.subjects.filter((value) => value !== option)
-        : [...profile.subjects, option]
-      setProfile({ ...profile, subjects: next })
-      return
-    }
-    setProfile({ ...profile, [key]: option } as StudentProfile)
-  }
+function Back({ page, setPage }: Props) {
+  const index = order.indexOf(page)
+  if (index <= 0) return null
+  return <button className="back-btn" onClick={() => setPage(order[index - 1])}>← Back</button>
+}
 
-  const selected = (option: string) =>
-    key === 'subjects'
-      ? profile.subjects.includes(option)
-      : String(profile[key as keyof StudentProfile]) === option
-
+function Intro({ setPage }: Pick<Props,'setPage'>) {
   return (
     <section className="page">
       <div className="section-head">
         <div>
-          <div className="eyebrow">01 · Learner profile</div>
-          <h1 className="section-title">รู้จัก journey ก่อน<br />ค่อยเลือก product</h1>
+          <div className="eyebrow">LEARNER JOURNEY</div>
+          <h1 className="hero-title">รู้ก่อนว่าอยู่ตรงไหน<br/><span>แล้วค่อยเลือกว่าจะไปทางไหน</span></h1>
+          <p className="lead">
+            Compass ไม่เริ่มจาก catalog แต่เริ่มจากเป้าหมาย คะแนนปัจจุบัน และพื้นฐานที่ยังขาด
+          </p>
+          <div className="actions">
+            <button className="primary" onClick={() => setPage('goal')}>เริ่มเช็กเป้าหมาย + พื้นฐาน</button>
+          </div>
         </div>
         <div className="section-number">01</div>
       </div>
 
-      <div className="step-progress">
-        {[0,1,2,3].map((x) => <i className={x <= Math.floor(step / onboarding.length * 4) ? 'done' : ''} key={x} />)}
-      </div>
-
-      <div className="onboard-grid">
-        <article className="board-card">
-          <div className="board-title red">PROFILE BUILDER</div>
-          <span className="note">คำถาม {step + 1} / {onboarding.length}</span>
-          <h2>{item.title}</h2>
-          <div className="choice-grid">
-            {item.options.map((option) => (
-              <button className={'choice ' + (selected(option) ? 'selected' : '')} key={option} onClick={() => select(option)}>
-                {option}
-              </button>
-            ))}
-          </div>
-          <div className="between">
-            <button className="secondary" disabled={step === 0} onClick={() => setStep((x) => Math.max(0, x - 1))}>ย้อนกลับ</button>
-            <button className="primary" onClick={() => step === onboarding.length - 1 ? setPage('diagnostic') : setStep((x) => x + 1)}>
-              {step === onboarding.length - 1 ? 'ไปทำ Diagnostic' : 'ถัดไป'}
-            </button>
-          </div>
-        </article>
-
-        <aside className="board-card profile-card">
-          <div className="board-title black">YOUR PROFILE</div>
-          {[
-            ['Segment', profile.segment],
-            ['รุ่น', profile.cohort],
-            ['เป้าหมาย', profile.goal],
-            ['วิชา', profile.subjects.join(', ')],
-            ['ระดับ', profile.level],
-            ['เวลา', profile.hours],
-            ['งบ', profile.budget],
-            ['Delivery', profile.mode],
-          ].map(([label, value]) => (
-            <div className="profile-row" key={label}><span>{label}</span><b>{value || '—'}</b></div>
-          ))}
-        </aside>
+      <div className="learner-explain-grid">
+        {[
+          ['01','Goal & Context','คุณอยู่ชั้นไหน อยากได้อะไร คะแนนตอนนี้ประมาณไหน'],
+          ['02','Baseline Check','ทำแบบทดสอบสั้น ๆ เพื่อดู concept ที่รู้แล้วและยังไม่แน่น'],
+          ['03','Gap Map','เห็นจุดที่ต้องเติมก่อน ไม่ใช่เห็นแค่คะแนนรวม'],
+          ['04','Recommended Path','จัดลำดับว่าจะเรียน / ฝึก / mock อะไรก่อนหลัง'],
+          ['05','Outcome','ผลเรียนหรือผลสอบกลับมา update path'],
+        ].map(([n,t,c]) => (
+          <article className="explain-card" key={n}>
+            <span>{n}</span><b>{t}</b><p>{c}</p>
+          </article>
+        ))}
       </div>
     </section>
   )
 }
 
-function Diagnostic({ setPage }: Pick<Props, 'setPage'>) {
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const question = diagnosticQuestions[questionIndex]
+function Goal({ profile, setProfile, setPage }: {profile:Profile;setProfile:(x:Profile)=>void;setPage:Props['setPage']}) {
+  const choices = {
+    stage:['Primary','Lower Secondary','Upper Secondary'],
+    need:['Foundation','Grade improvement','Entrance','Competition','TCAS / University','Ongoing support'],
+    goal:['เพิ่มเกรด','สอบเข้า ม.4','สอวน. / แข่งขัน','วิศวะ','แพทย์','ยังไม่แน่ใจ'],
+    time:['2–4 ชม./สัปดาห์','5–7 ชม./สัปดาห์','8+ ชม./สัปดาห์'],
+    support:['Online','Branch','Hybrid'],
+  }
 
-  if (!question) {
+  return (
+    <section className="page">
+      <Back page="goal" setPage={setPage}/>
+      <div className="eyebrow">STEP 1 · GOAL & CONTEXT</div>
+      <h1 className="section-title">ก่อนแนะนำคอร์ส<br/>เราต้องรู้ปัญหาก่อน</h1>
+      <div className="form-board">
+        <Choice title="ช่วงชั้น" value={profile.stage} options={choices.stage} onChange={(v)=>setProfile({...profile,stage:v})}/>
+        <Choice title="ตอนนี้ต้องการอะไร" value={profile.need} options={choices.need} onChange={(v)=>setProfile({...profile,need:v})}/>
+        <Choice title="เป้าหมาย" value={profile.goal} options={choices.goal} onChange={(v)=>setProfile({...profile,goal:v})}/>
+        <div className="field-block">
+          <div className="field-title">คะแนนปัจจุบันโดยประมาณ <b>{profile.score}</b></div>
+          <input className="score-range" type="range" min="20" max="95" value={profile.score} onChange={(e)=>setProfile({...profile,score:Number(e.target.value)})}/>
+        </div>
+        <Choice title="เวลาที่มี" value={profile.time} options={choices.time} onChange={(v)=>setProfile({...profile,time:v})}/>
+        <Choice title="รูปแบบ support" value={profile.support} options={choices.support} onChange={(v)=>setProfile({...profile,support:v})}/>
+      </div>
+      <div className="end"><button className="primary" onClick={()=>setPage('baseline')}>ต่อไป: เช็กพื้นฐาน →</button></div>
+    </section>
+  )
+}
+
+function Choice({title,value,options,onChange}:{title:string;value:string;options:string[];onChange:(v:string)=>void}) {
+  return (
+    <div className="field-block">
+      <div className="field-title">{title}</div>
+      <div className="choice-row">
+        {options.map((option)=><button key={option} className={value===option?'selected':''} onClick={()=>onChange(option)}>{option}</button>)}
+      </div>
+    </div>
+  )
+}
+
+function Baseline({ setPage }: Pick<Props,'setPage'>) {
+  const [answer, setAnswer] = useState<number | null>(null)
+  const questions = [
+    ['Mechanics','แรงลัพธ์เป็นศูนย์หมายถึงข้อใด','วัตถุไม่มีแรงใดกระทำ','วัตถุไม่มีความเร่ง','วัตถุหยุดนิ่งเสมอ'],
+    ['Electricity','ถ้า R คงที่และ V เพิ่ม 2 เท่า กระแส I จะ...','ลดครึ่งหนึ่ง','เท่าเดิม','เพิ่ม 2 เท่า'],
+    ['Problem solving','ข้อสอบ 60 นาที 30 ข้อ กลยุทธ์ใดเหมาะที่สุด','เริ่มข้อยากสุด','แบ่งเวลาและ flag ข้อที่ติด','ทำแบบสุ่ม'],
+  ]
+  const [index,setIndex] = useState(0)
+  const q = questions[index]
+
+  if (!q) {
     return (
       <section className="page narrow">
-        <div className="eyebrow">01 · Diagnostic</div>
-        <h1 className="section-title">จาก score → ไปหา gap</h1>
-        <article className="board-card result-grid">
-          <div className="score-box"><span>Diagnostic</span><b>68</b><small>prototype score</small></div>
-          <div>
-            {[
-              ['Mechanics',42,'Needs attention','low'],
-              ['Electricity',56,'Developing','mid'],
-              ['Waves',84,'Strong','good'],
-              ['Problem solving',61,'Developing','mid'],
-            ].map(([label,score,status,tone]) => (
-              <div className="skill-row" key={String(label)}>
-                <span>{label}</span>
-                <div className="bar"><i style={{ width: Number(score) + '%' }} /></div>
-                <b className={String(tone)}>{status}</b>
-              </div>
-            ))}
-            <button className="primary" onClick={() => setPage('compass')}>สร้าง Recommended Path</button>
-          </div>
-        </article>
+        <Back page="baseline" setPage={setPage}/>
+        <div className="eyebrow">STEP 2 · BASELINE COMPLETE</div>
+        <h1 className="section-title">เราไม่ได้หาแค่คะแนน<br/>เราหาว่า gap อยู่ตรงไหน</h1>
+        <div className="baseline-summary">
+          <div><span>Mechanics</span><b>42</b><i>ต้องเติมก่อน</i></div>
+          <div><span>Electricity</span><b>57</b><i>ยังไม่แน่น</i></div>
+          <div><span>Waves</span><b>81</b><i>แข็งแรง</i></div>
+        </div>
+        <div className="end"><button className="primary" onClick={()=>setPage('gap')}>ดู Gap Map →</button></div>
       </section>
     )
   }
 
   return (
     <section className="page narrow">
-      <div className="eyebrow">01 · Quick diagnostic</div>
-      <h1 className="section-title">วัดเพื่อจัดลำดับ<br />ไม่ใช่เพื่อจัดอันดับ</h1>
-      <article className="board-card quiz-card">
-        <div className="between no-margin">
-          <span className="pill">{question.skill}</span>
-          <span className="note">{questionIndex + 1} / {diagnosticQuestions.length}</span>
+      <Back page="baseline" setPage={setPage}/>
+      <div className="eyebrow">STEP 2 · BASELINE CHECK</div>
+      <h1 className="section-title">เช็กพื้นฐานสั้น ๆ</h1>
+      <p className="lead">ผลจะถูกใช้ร่วมกับเป้าหมายและคะแนนปัจจุบัน เพื่อจัดลำดับสิ่งที่ต้องเติม</p>
+      <article className="quiz-panel">
+        <div className="quiz-meta"><span>{q[0]}</span><b>{index+1} / {questions.length}</b></div>
+        <h2>{q[1]}</h2>
+        <div className="answer-stack">
+          {q.slice(2).map((a,i)=><button key={a} className={answer===i?'selected':''} onClick={()=>setAnswer(i)}>{a}</button>)}
         </div>
-        <h2>{question.question}</h2>
-        <div className="answers">
-          {question.answers.map((answer) => (
-            <button key={answer} onClick={() => setQuestionIndex((x) => x + 1)}>{answer}</button>
-          ))}
-        </div>
+        <div className="end"><button className="primary" disabled={answer===null} onClick={()=>{setIndex(index+1);setAnswer(null)}}>ตอบและไปต่อ</button></div>
       </article>
     </section>
   )
 }
 
-function Compass({ profile, setPage }: { profile: StudentProfile; setPage: Props['setPage'] }) {
-  const path = pathBySegment[profile.segment]
+function Gap({ profile, setPage }: {profile:Profile;setPage:Props['setPage']}) {
   return (
     <section className="page">
-      <div className="section-head">
-        <div>
-          <div className="eyebrow">01 · Recommended path</div>
-          <h1 className="section-title">Your Compass</h1>
-          <p className="lead">Compass เลือกลำดับที่ควรทำ ไม่ได้เลือกคอร์สที่แพงที่สุด</p>
-        </div>
-        <div className="section-number">01</div>
+      <Back page="gap" setPage={setPage}/>
+      <div className="eyebrow">STEP 3 · GAP MAP</div>
+      <h1 className="section-title">สิ่งที่ต้องเติม<br/>ก่อนพาไปถึงเป้า</h1>
+      <div className="profile-strip">
+        <span>{profile.stage}</span><span>{profile.need}</span><span>{profile.goal}</span><span>Current score {profile.score}</span>
       </div>
-
-      <div className="chips">
-        {[profile.segment, profile.cohort, profile.goal, profile.level, profile.hours, profile.mode].map((x) => <span key={x}>{x}</span>)}
+      <div className="gap-grid">
+        <article className="gap-card urgent"><span>PRIORITY 01</span><b>Mechanics</b><strong>42</strong><p>พื้นฐานยังไม่พอสำหรับ intensive practice</p></article>
+        <article className="gap-card medium"><span>PRIORITY 02</span><b>Electricity</b><strong>57</strong><p>เข้า concept บางส่วน แต่ error pattern ยังสูง</p></article>
+        <article className="gap-card good"><span>KEEP</span><b>Waves</b><strong>81</strong><p>พร้อมเข้าสู่ timed practice</p></article>
       </div>
-
-      <div className="path-grid">
-        {path.map(([title,copy,duration,success], index) => (
-          <div className={'path-stage ' + (index === 0 ? 'active' : '')} key={title}>
-            <div className="stage-number">{index + 1}</div>
-            <article className="board-card stage-card">
-              <b>{title}</b><p>{copy}</p><span>{duration}</span><small>Success: {success}</small>
-            </article>
-          </div>
-        ))}
-      </div>
-
-      <details className="board-card why">
-        <summary>WHY THIS PATH?</summary>
-        <p>ใช้ segment, goal, diagnostic gap, available time, preferred delivery และ budget เพื่อจัดลำดับ journey แล้วปรับใหม่เมื่อ outcome เปลี่ยน</p>
-      </details>
-      <div className="end"><button className="primary" onClick={() => setPage('support')}>เลือกระดับ Support</button></div>
+      <div className="logic-callout"><b>Fill the gap, not sell the catalog.</b><span>Recommendation จะจัดลำดับจาก gap + goal + time + support preference</span></div>
+      <div className="end"><button className="primary" onClick={()=>setPage('path')}>สร้าง Recommended Path →</button></div>
     </section>
   )
 }
 
-function Support({ setPage }: Pick<Props, 'setPage'>) {
+function Path({ profile, setPage }: {profile:Profile;setPage:Props['setPage']}) {
   return (
     <section className="page">
-      <div className="section-head">
-        <div>
-          <div className="eyebrow">01 · Price ladder</div>
-          <h1 className="section-title">จ่ายเพิ่มแล้ว<br />ได้ Value เพิ่มอะไร?</h1>
-        </div>
-        <div className="section-number">01</div>
+      <Back page="path" setPage={setPage}/>
+      <div className="eyebrow">STEP 4 · RECOMMENDED PATH</div>
+      <div className="section-head compact">
+        <div><h1 className="section-title">Your Compass</h1><p className="lead">ลำดับที่ควรทำ ไม่ใช่ลิสต์คอร์สทั้งหมดที่เรามี</p></div>
+        <button className="edit-link" onClick={()=>setPage('goal')}>Edit goal / score</button>
       </div>
-
-      <div className="tier-grid">
-        {tiers.map(([name, value, fit]) => (
-          <article className={'tier ' + (name === 'CORE' ? 'recommended' : '')} key={name}>
-            {name === 'CORE' && <span className="recommend-badge">RECOMMENDED</span>}
-            <b>{name}</b>
-            <strong>{value}</strong>
-            <p>{fit}</p>
-          </article>
-        ))}
+      <div className="profile-strip"><span>{profile.goal}</span><span>{profile.time}</span><span>{profile.support}</span></div>
+      <div className="path-line">
+        {[
+          ['01','Foundation','Mechanics reset','ปิด prerequisite gap ก่อน'],
+          ['02','Core','Physics concept path','เชื่อม concept กับโจทย์'],
+          ['03','Practice','Timed practice','ฝึกตาม error pattern'],
+          ['04','Mock','Outcome check','ผลกลับมา update path'],
+        ].map(([n,t,c,d])=><article key={n}><span>{n}</span><b>{t}</b><strong>{c}</strong><p>{d}</p></article>)}
       </div>
-      <p className="note">Prototype offer architecture only — not official pricing.</p>
-      <div className="end"><button className="primary" onClick={() => setPage('progress')}>ดู Adaptive Journey</button></div>
+      <div className="end"><button className="primary" onClick={()=>setPage('support')}>เลือกระดับ Support →</button></div>
     </section>
   )
 }
 
-function Progress() {
+function Support({setPage}:Pick<Props,'setPage'>) {
   return (
     <section className="page">
-      <div className="section-head">
-        <div>
-          <div className="eyebrow">01 · Outcome feedback</div>
-          <h1 className="section-title">ผลเปลี่ยน<br />Path ก็ต้องเปลี่ยน</h1>
-        </div>
-        <div className="section-number">01</div>
+      <Back page="support" setPage={setPage}/>
+      <div className="eyebrow">STEP 5 · SUPPORT LADDER</div>
+      <h1 className="section-title">จ่ายเพิ่มแล้ว<br/>ได้ support เพิ่มอะไร?</h1>
+      <div className="support-grid">
+        <article><small>FREE / ENTRY</small><b>Starter</b><p>Goal check + baseline</p></article>
+        <article className="featured"><small>CORE</small><b>Recommended Path</b><p>เรียนตาม path ด้วยตัวเอง</p></article>
+        <article><small>PLUS</small><b>Teacher Support</b><p>มีคนช่วยเมื่อเจอจุดติด</p></article>
+        <article><small>PREMIUM</small><b>Advisor + Family</b><p>ดู journey และ decision ร่วมกับครอบครัว</p></article>
       </div>
-
-      <div className="progress-grid">
-        <article className="board-card">
-          <div className="board-title red">LATEST OUTCOME</div>
-          <div className="score-delta">52 <i>→</i> 68</div>
-          <div className="priority-callout">Mechanics ดีขึ้น<br />Priority ใหม่: Electricity</div>
-          {[
-            ['Mechanics',64,'Developing','mid'],
-            ['Electricity',50,'Priority','low'],
-            ['Waves',84,'Strong','good'],
-          ].map(([label,score,status,tone]) => (
-            <div className="skill-row" key={String(label)}>
-              <span>{label}</span><div className="bar"><i style={{ width: Number(score) + '%' }} /></div><b className={String(tone)}>{status}</b>
-            </div>
-          ))}
-        </article>
-
-        <article className="board-card">
-          <div className="board-title black">UPDATED PATH</div>
-          <div className="action-queue">
-            <div><b>DONE</b><span>Foundation · Mechanics gap improved</span></div>
-            <div><b>NEXT</b><span>Core · Prioritize Electricity practice</span></div>
-            <div><b>THEN</b><span>Timed practice · error pattern review</span></div>
-            <div><b>CHECK</b><span>Mock result returns to Compass</span></div>
-          </div>
-          <div className="mini-flow">
-            <span>Diagnostic</span><i>→</i><span>Plan</span><i>→</i><span>Learn</span><i>→</i><span>Outcome</span><i>→</i><span>Better Match</span>
-          </div>
-        </article>
-      </div>
+      <p className="data-note">Prototype support architecture — not official OnDemand pricing.</p>
+      <div className="end"><button className="primary" onClick={()=>setPage('outcome')}>ดู Outcome Loop →</button></div>
     </section>
   )
 }
 
-export default function StudentExperience({ page, setPage }: Props) {
-  const [profile, setProfileState] = useState<StudentProfile>(() => {
-    const raw = window.localStorage.getItem('compass-profile-v2')
-    if (!raw) return defaultProfile
-    try { return { ...defaultProfile, ...JSON.parse(raw) } as StudentProfile } catch { return defaultProfile }
-  })
+function Outcome({setPage}:Pick<Props,'setPage'>) {
+  return (
+    <section className="page">
+      <Back page="outcome" setPage={setPage}/>
+      <div className="eyebrow">STEP 6 · OUTCOME FEEDBACK</div>
+      <h1 className="section-title">ผลเปลี่ยน<br/>Path ก็เปลี่ยน</h1>
+      <div className="outcome-board">
+        <div className="score-change"><span>Baseline</span><b>52</b><i>→</i><span>Latest</span><b>68</b></div>
+        <div className="outcome-copy">
+          <b>Mechanics ดีขึ้น</b>
+          <p>Priority ใหม่ขยับไป Electricity ระบบจึงปรับลำดับ practice แทนที่จะขายแพ็กเดิมซ้ำ</p>
+          <div className="mini-loop"><span>Outcome</span><i>→</i><span>Updated Gap</span><i>→</i><span>Updated Path</span></div>
+        </div>
+      </div>
+      <div className="end"><button className="secondary" onClick={()=>setPage('goal')}>ลองเปลี่ยน profile ใหม่</button></div>
+    </section>
+  )
+}
 
-  useEffect(() => {
-    window.localStorage.setItem('compass-profile-v2', JSON.stringify(profile))
-  }, [profile])
-
-  const content = useMemo(() => {
-    if (page === 'home') return <Home setPage={setPage} />
-    if (page === 'about') return <About profile={profile} setProfile={setProfileState} setPage={setPage} />
-    if (page === 'diagnostic') return <Diagnostic setPage={setPage} />
-    if (page === 'compass') return <Compass profile={profile} setPage={setPage} />
-    if (page === 'support') return <Support setPage={setPage} />
-    return <Progress />
-  }, [page, profile, setPage])
-
+export default function StudentExperience({page,setPage}:Props) {
+  const [profile,setProfile] = useState<Profile>(defaults)
+  const content = useMemo(()=>{
+    if(page==='intro') return <Intro setPage={setPage}/>
+    if(page==='goal') return <Goal profile={profile} setProfile={setProfile} setPage={setPage}/>
+    if(page==='baseline') return <Baseline setPage={setPage}/>
+    if(page==='gap') return <Gap profile={profile} setPage={setPage}/>
+    if(page==='path') return <Path profile={profile} setPage={setPage}/>
+    if(page==='support') return <Support setPage={setPage}/>
+    return <Outcome setPage={setPage}/>
+  },[page,profile,setPage])
   return content
 }

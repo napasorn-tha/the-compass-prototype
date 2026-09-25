@@ -1,53 +1,57 @@
-# The Compass — Portfolio & Journey Operating System Prototype
+# From Catalog to Compass — Product Portfolio Operating System
 
-An interview prototype that translates the **From Catalog to Compass** strategy into a three-layer operating model.
+Interview prototype for a **Product Port Lead – Deputy Department Manager, OnDemand** discussion.
 
-## 1. Learner Journey
-The learner does not browse a giant catalog first. The flow begins with:
-**Segment → Goal → Diagnostic → Recommended Path → Support Level → Outcome → Updated Path**
+## What changed in V3
 
-The prototype now supports multiple learner segments:
-- ประถม
-- ม.ต้น
-- ม.ปลาย / TCAS
-- International / Bilingual / GED
+The prototype now has three layers:
 
-## 2. Advisor Console
-A shared decision layer for branch / advisor / parent-assisted journeys:
-- learner goal and segment
-- gap / signal
-- recommended path
-- next best action
-- advisor interaction as structured data
+1. **Learner Journey**
+   - Goal & context
+   - Baseline check
+   - Gap map
+   - Recommended path
+   - Support ladder
+   - Outcome feedback
 
-## 3. Portfolio Control Tower
-A weekly operating view for Product / Portfolio leadership:
-- weekly pulse
-- segment mix
-- top packs
-- enrollments
-- conversion
-- completion
-- repeat purchase
-- margin
-- portfolio action queue
-- governance cadence
+2. **Advisor**
+   - Shared reasoning
+   - Assisted journey
+   - Advisor / parent support
+   - Feedback as a market signal
 
-Prototype portfolio actions include:
-**GROW / MERGE / REPACKAGE / PROMOTE / HARVEST / TEST**
+3. **Portfolio Operating System**
+   - Portfolio Map (Life stage × Need state)
+   - Product Performance
+   - Customer Voice
+   - Competitor Intelligence
+   - Journey & Outcomes
+   - Decision Queue
+   - Growth & Ecosystem collaboration
 
 ## Data note
-All metrics, prices, learner records and performance values in this app are mock data for prototype discussion only. They are not official OnDemand / LEARN data.
 
-## Run locally
+Internal learner and commercial data are synthetic prototype data.
+
+The synthetic cohort is designed for interaction testing and is conceptually calibrated using historical public education benchmarks such as national O-NET / A-Level statistics where applicable. It is not school-level performance data.
+
+Public product / market / competitor signals should be validated against reproducible public sources before being used as business findings.
+
+## Scope note
+
+The Product Port Lead prototype treats **OnDemand** as the owned portfolio.
+
+Ignite, TCASter, Premier Prep and other LEARN businesses are represented as **partner BUs / cross-BU collaboration opportunities**, not as portfolios managed by the OnDemand Product Port Lead.
+
+## Run
+
 ```bash
 npm install
 npm run dev
 ```
 
 ## Build
+
 ```bash
 npm run build
 ```
-
-Built with React + TypeScript + Vite.
