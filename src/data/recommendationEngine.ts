@@ -113,13 +113,18 @@ export function recommendPackages(input: RecommendationInput):PackageRecommendat
   const aligned=ranked.filter(x=>x.score>=threshold)
   const value=[...aligned]
     .filter(x=>x.p.packageId!==best?.p.packageId)
-    .sort((a,b)=>a.p.price-b.p.price)[0]||best
+    .sort((a,b)=>a.p.price-b.p.price)[0]||
+    [...ranked]
+      .filter(x=>x.p.packageId!==best?.p.packageId)
+      .sort((a,b)=>a.p.price-b.p.price)[0]||
+    best
   const used=new Set([best?.p.packageId,value?.p.packageId])
   const support=[...aligned]
     .filter(x=>!used.has(x.p.packageId))
     .sort((a,b)=>b.p.componentCount-a.p.componentCount||b.p.price-a.p.price)[0]||
     [...ranked].filter(x=>!used.has(x.p.packageId))
-      .sort((a,b)=>b.p.componentCount-a.p.componentCount)[0]||best
+      .sort((a,b)=>b.p.componentCount-a.p.componentCount||b.p.price-a.p.price)[0]||
+    best
 
   const gateReason = gate
     ? ''
