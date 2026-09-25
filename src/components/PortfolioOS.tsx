@@ -14,14 +14,14 @@ import {
 } from '../data/v3'
 import '../portfolio-v4.css'
 
-type Workspace = 'architecture' | 'voice' | 'competitor' | 'journey' | 'ecosystem' | 'decisions'
+type Workspace = 'performance' | 'voice' | 'competitor' | 'journey' | 'tracking' | 'decisions'
 
 const workspaces: {id:Workspace;label:string}[] = [
-  {id:'architecture',label:'Portfolio Architecture'},
+  {id:'performance',label:'Portfolio Performance'},
   {id:'voice',label:'Customer Voice'},
   {id:'competitor',label:'Competitor Intel'},
   {id:'journey',label:'Journey & Outcomes'},
-  {id:'ecosystem',label:'Ecosystem Routes'},
+  {id:'tracking',label:'Package Tracking'},
   {id:'decisions',label:'Decision Queue'},
 ]
 
@@ -33,7 +33,69 @@ function Readout({see,matters,decision}:{see:string;matters:string;decision:stri
   </div>
 }
 
-function Architecture() {
+
+function PortfolioPerformance() {
+  const overall = stats('ALL')
+  const tcas = stats('TCAS / University')
+  const ongoing = stats('Ongoing support')
+  const reviewCount = decisionQueue.length
+
+  const packageRows = [
+    {name:"Pack V-Series Physics TCAS + Upskill ฟิสิกส์ A-Level (Dek70)",segment:'TCAS · Physics',revenue:'฿2.8M',trend:'+11%',conversion:'74%',margin:'61%',outcome:'73%',signal:'GROW / WATCH OVERLAP'},
+    {name:"Pack Math Admission TCAS + UpSkill คณิต A-Level V.71",segment:'TCAS · Math',revenue:'฿2.5M',trend:'+8%',conversion:'71%',margin:'59%',outcome:'70%',signal:'WATCH NAMING'},
+    {name:'Pack 1 คณิตศาสตร์ ม.ปลาย (8201-8204)',segment:'Upper Sec · Math',revenue:'฿1.9M',trend:'+4%',conversion:'55%',margin:'56%',outcome:'68%',signal:'GROW'},
+    {name:'Pack Essential ปูพื้นฐานภาษาอังกฤษ ม.ปลาย',segment:'Upper Sec · English',revenue:'฿1.1M',trend:'-3%',conversion:'49%',margin:'52%',outcome:'66%',signal:'PROMOTE / ROUTE'},
+    {name:'Pack 1 คณิตศาสตร์ ม.ต้น (8101-8102)',segment:'Lower Sec · Math',revenue:'฿0.9M',trend:'+2%',conversion:'56%',margin:'53%',outcome:'69%',signal:'KEEP / ROUTE'},
+  ]
+
+  return <div className="p4-stack">
+    <Readout
+      see={'TCAS drives the strongest immediate conversion ('+tcas.recPaid+'%), while ongoing learning shows stronger continuation ('+ongoing.next+'% next-term).'}
+      matters="Portfolio value is coming from different engines: admission urgency now, continuity and cross-subject potential over time."
+      decision={reviewCount+' package / pathway signals need review; protect growth while fixing routing and overlap before adding new packages.'}
+    />
+
+    <div className="p4-intro">
+      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Current portfolio health — one meeting view</h2><p>เปิดหน้าเดียวเพื่อเห็น <b>business performance, learner outcome และ package signals ที่ต้องสนใจตอนนี้</b></p></div>
+      <div className="p4-kpi"><span>ACTIVE REVIEW SIGNALS</span><b>{reviewCount}</b><small>move to Decision Queue when action is required</small></div>
+    </div>
+
+    <div className="p4-metrics">
+      <article><span>Paid learners*</span><b>{Math.round(overall.cohort.length*overall.recPaid/100)}</b><small>illustrative monthly snapshot</small></article>
+      <article><span>Rec → Paid*</span><b>{overall.recPaid}%</b><small>paid within 14d ÷ recommended</small></article>
+      <article><span>Next-term*</span><b>{overall.next}%</b><small>eligible learners continuing</small></article>
+      <article><span>Cross-subject*</span><b>{overall.cross}%</b><small>second subject ÷ active learners</small></article>
+      <article><span>Outcome improved*</span><b>{overall.improved}%</b><small>selected learning outcome improved</small></article>
+    </div>
+
+    <div className="p4-performance-split">
+      <article>
+        <span>ACHIEVEMENT ENGINE</span>
+        <h3>TCAS / University</h3>
+        <b>{tcas.recPaid}% Rec→Paid</b>
+        <p>Fast conversion · exam outcome · brand halo</p>
+      </article>
+      <article>
+        <span>RELATIONSHIP ENGINE</span>
+        <h3>Ongoing Learning</h3>
+        <b>{ongoing.next}% Next-term</b>
+        <p>Continuation · cross-subject · longer learner relationship</p>
+      </article>
+    </div>
+
+    <div className="p4-performance-table">
+      <div className="p4-performance-head"><span>PACKAGE</span><span>REVENUE*</span><span>TREND*</span><span>REC→PAID*</span><span>MARGIN*</span><span>OUTCOME*</span><span>CURRENT SIGNAL</span></div>
+      {packageRows.map(row=><div className="p4-performance-row" key={row.name}>
+        <div><b>{row.name}</b><small>{row.segment}</small></div>
+        <span>{row.revenue}</span><span>{row.trend}</span><span>{row.conversion}</span><span>{row.margin}</span><span>{row.outcome}</span><strong>{row.signal}</strong>
+      </div>)}
+    </div>
+
+    <div className="data-note">*Synthetic internal performance data for prototype discussion. Package names are mapped from OnDemand public catalog / storefront.</div>
+  </div>
+}
+
+function PackageTracking() {
   const [stage,setStage] = useState<LifeStage>('Upper Secondary')
   const subjectOptions = Array.from(new Set(catalogOffers.filter(x=>x.stage===stage).map(x=>x.subject)))
   const [subject,setSubject] = useState('Physics')
@@ -71,10 +133,10 @@ function Architecture() {
     <Readout see={see} matters={matters} decision={decision}/>
 
     <div className="p4-intro">
-      <div><div className="eyebrow">PORTFOLIO ARCHITECTURE</div><h2>Catalog first. Need overlay second.</h2>
-        <p>เห็นโครงสินค้าจริงก่อน แล้ว overlay ว่าแต่ละ offer serve <b>Foundation / Grade / Entrance / Competition / TCAS / Ongoing</b> ตรงไหน</p>
+      <div><div className="eyebrow">PACKAGE TRACKING</div><h2>Package reference, overlap & bridge opportunities</h2>
+        <p>หน้าสนับสนุนก่อนตัดสินใจ: ดูว่า package ไหน <b>target ซ้ำ, content ใกล้กัน, มี routing constraint หรือควร bridge / top-up กับ capability อื่น</b></p>
       </div>
-      <div className="p4-kpi"><span>PUBLIC OFFERS MAPPED</span><b>{catalogOffers.length}</b><small>snapshot from OnDemand public shop</small></div>
+      <div className="p4-kpi"><span>TRACKING SNAPSHOT</span><b>{families.length}</b><small>product families in selected view</small></div>
     </div>
 
     <div className="p4-filterbox">
@@ -108,11 +170,21 @@ function Architecture() {
     </div>
 
     <div className="p4-principle">
-      <b>Portfolio rule:</b>
-      <span>2 offers in the same cell ≠ cannibalization automatically.</span>
-      <i>Different product + customer understands → KEEP</i>
-      <i>Different product + customer confused → REPOSITION / ROUTE BETTER</i>
+      <b>Tracking rule:</b>
+      <span>Similar target ≠ cannibalization automatically.</span>
+      <i>Different role + clear choice → KEEP</i>
+      <i>Different role + customer confusion → REPOSITION / ROUTE BETTER</i>
       <i>Same job + real substitution → MERGE / REPACKAGE</i>
+    </div>
+
+    <div className="p4-bridge-tracking">
+      <div className="p4-intro"><div><div className="eyebrow">BRIDGE / TOP-UP WATCH</div><h2>Potential sister-company connections</h2><p>เก็บเป็น supporting signal ของ package tracking — ไม่ใช่หน้าแยก</p></div></div>
+      {ecosystemRoutes.map(route=><article key={route.id}>
+        <div><span>TRIGGER</span><b>{route.trigger}</b><small>{route.learner}</small></div>
+        <div><span>ONDEMAND PATH</span><b>{route.ownedPath}</b></div>
+        <div><span>POTENTIAL BRIDGE / TOP-UP</span>{route.bridges.map(b=><strong key={b.brand}>{b.brand} — {b.role}</strong>)}</div>
+        <div><span>GAP / CONSTRAINT</span><b>{route.buildOnlyIf}</b></div>
+      </article>)}
     </div>
   </div>
 }
@@ -227,26 +299,6 @@ function JourneyOutcomes() {
   </div>
 }
 
-function EcosystemRoutes() {
-  const [selected,setSelected]=useState(ecosystemRoutes[0])
-  return <div className="p4-stack">
-    <Readout
-      see={selected.trigger}
-      matters="บาง learner need ข้ามขอบเขตคอร์ส OnDemand แต่ capability อาจมีอยู่ใน LEARN ecosystem แล้ว"
-      decision="Route to existing capability first; build only the gap that remains after the cross-BU path"
-    />
-    <div className="p4-intro"><div><div className="eyebrow">ECOSYSTEM ROUTES</div><h2>When should OnDemand bridge to another BU?</h2><p>pair เพราะ learner need บอกให้ pair — ไม่ใช่ pair เพื่อโชว์ ecosystem</p></div></div>
-    <div className="p4-routelayout">
-      <div className="p4-routechoices">{ecosystemRoutes.map(r=><button className={selected.id===r.id?'active':''} onClick={()=>setSelected(r)} key={r.id}><span>TRIGGER</span><b>{r.trigger}</b><small>{r.learner}</small></button>)}</div>
-      <div className="p4-routeflow">
-        <div className="p4-routeowner"><span>ONDEMAND PATH</span><b>{selected.ownedPath}</b></div>
-        {selected.bridges.map((b,i)=><div className="p4-bridge" key={b.brand}><i>{i+1}</i><div><span>BRIDGE WHEN</span><b>{b.when}</b><small>{b.role}</small></div><strong>{b.brand}</strong></div>)}
-        <div className="p4-build"><span>BUILD ONLY IF</span><b>{selected.buildOnlyIf}</b></div>
-      </div>
-    </div>
-  </div>
-}
-
 function Decisions() {
   const [chosen,setChosen]=useState<Record<string,string>>({})
   const actionSets=['KEEP','REPOSITION','ROUTE BETTER','REPACKAGE','MERGE','GROW','HARVEST','EXIT']
@@ -266,19 +318,19 @@ function Decisions() {
 }
 
 export default function PortfolioOS(){
-  const [workspace,setWorkspace]=useState<Workspace>('architecture')
+  const [workspace,setWorkspace]=useState<Workspace>('performance')
   const content=useMemo(()=>{
-    if(workspace==='architecture')return <Architecture/>
+    if(workspace==='performance')return <PortfolioPerformance/>
     if(workspace==='voice')return <CustomerVoice/>
     if(workspace==='competitor')return <CompetitorIntel/>
     if(workspace==='journey')return <JourneyOutcomes/>
-    if(workspace==='ecosystem')return <EcosystemRoutes/>
+    if(workspace==='tracking')return <PackageTracking/>
     return <Decisions/>
   },[workspace])
 
   return <section className="page portfolio-page">
     <div className="section-head">
-      <div><div className="eyebrow">PRODUCT PORT LEAD · DEPUTY DEPARTMENT MANAGER</div><h1 className="section-title">Portfolio Operating System</h1><p className="lead">Understand the catalog → overlay learner needs → separate overlap from confusion → route the journey → make the portfolio decision.</p></div>
+      <div><div className="eyebrow">PRODUCT PORT LEAD · DEPUTY DEPARTMENT MANAGER</div><h1 className="section-title">Portfolio Operating System</h1><p className="lead">Current performance → diagnose customer & market signals → validate outcomes → track package constraints / bridges → decide.</p></div>
       <div className="section-number">03</div>
     </div>
     <div className="workspace-tabs">{workspaces.map(w=><button className={workspace===w.id?'active':''} onClick={()=>setWorkspace(w.id)} key={w.id}>{w.label}</button>)}</div>
