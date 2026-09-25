@@ -2,83 +2,40 @@
 
 Interview prototype for **Product Port Lead – Deputy Department Manager, OnDemand**.
 
-## Governing objective
+## Portfolio OS V4
 
-**Learner side:** Right learner → right existing package → expected learning success.
+The Portfolio OS now starts from the **actual public catalog architecture**, then overlays learner need states.
 
-**Portfolio side:** Observed performance + learner outcome + market evidence → better portfolio decision.
+Core logic:
 
-The prototype deliberately separates recommendation, diagnosis and portfolio decision-making so each workspace serves the same shared objective instead of becoming an isolated dashboard.
+1. Understand catalog structure
+2. Overlay learner needs
+3. Separate:
+   - true product overlap
+   - discovery / naming confusion
+   - true portfolio gap
+4. Route journeys through OnDemand or LEARN ecosystem capabilities
+5. Convert evidence into a portfolio decision
 
-## Shared data backbone
+The public catalog snapshot includes multiple layers visible on the OnDemand storefront:
+- core packs
+- topic modules
+- school-specific packs
+- TCAS packs
+- +Upskill bundles
+- standalone Upskill
+- multi-subject / faculty bundles
 
-The app now ships with a normalized, read-only prototype data backbone derived from the final learner mock workbook.
+Product names / SKU labels / public prices are mapped from current public storefront pages. The snapshot is broader than the previous prototype but is **not presented as a complete internal SKU master**.
 
-Relationship chain:
+## Data note
 
-```
-Learner
-  → Goal
-  → Assessment
-  → Recommendation
-  → Enrollment
-  → Outcome
-```
+Learner, commercial, margin, retention and customer-comment counts are synthetic prototype data.
 
-Shared dimensions:
+Synthetic score distributions are conceptually calibrated using public historical national education benchmarks such as O-NET / A-Level where applicable. They are not school-level performance claims.
 
-- Course Catalog
-- Package Catalog
-- Package Components
-- Branch Master
+Competitor and customer-perception views are hypothesis / research structures unless backed by reproducible public or internal evidence.
 
-Runtime join keys:
+## Scope
 
-- `learner_id`
-- `goal_id`
-- `recommendation_id`
-- `product_id / course_id`
-- `package_id`
-- `branch_id`
-
-The backbone loads once at app startup, builds reusable indexes, and exposes learner-, package- and branch-level context through `BackboneProvider`. Existing screens are migrated onto this shared store in later batches rather than each keeping separate mock arrays.
-
-### Dataset acceptance checks
-
-The runtime store checks expected row counts and referential links for:
-
-- 430 learner profiles
-- 617 goals
-- 1,865 assessments
-- 709 recommendations
-- 414 enrollments
-- 330 outcomes
-- 161 courses
-- 22 packages
-- 103 package-course links
-- 37 branches
-
-It also checks branch attribution rules: branch-channel enrollments must resolve to a branch, while non-branch transactions should not carry a branch id.
-
-## Recommendation contract
-
-Future learner/advisor migration uses three slots:
-
-1. **Best Match** — highest fit among eligible packages
-2. **Best Value** — lowest price among packages that still satisfy the learner need
-3. **More Support** — higher-support pathway for larger gaps / support needs
-
-Intensive / Upskill / advanced options are gated: the learner must either complete the prerequisite OnDemand course or pass the required baseline threshold.
-
-## Portfolio workspace order
-
-1. Portfolio Performance
-2. Customer Voice
-3. Competitor Intel
-4. Journey & Outcomes
-5. Package Tracking
-6. Decision Queue
-
-## Prototype note
-
-Learner, commercial and performance data are synthetic/proxy. Public catalog, branch and market mappings use observable sources and may require internal validation.
+The prototype treats OnDemand as the owned portfolio. Cross-BU brands appear only when a learner need triggers a potential collaboration path.

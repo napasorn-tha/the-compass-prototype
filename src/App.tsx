@@ -3,7 +3,6 @@ import { Brand } from './components/Brand'
 import AdvisorConsole from './components/AdvisorConsole'
 import PortfolioOS from './components/PortfolioOS'
 import StudentExperience, { StudentPage } from './components/StudentExperience'
-import { PROTOTYPE_DISCLOSURE } from './data/systemContract'
 
 type Mode = 'home' | 'learner' | 'advisor' | 'portfolio'
 
@@ -29,7 +28,7 @@ function Home({open}:{open:(mode:Mode)=>void}) {
         <div className="home-number">00</div>
       </div>
       <div className="three-layer">
-        <button onClick={()=>open('learner')}><span>01 · LEARNER</span><b>Where should I start?</b><p>Goal + context → baseline → gap → Top 3 package recommendation → outcome</p></button>
+        <button onClick={()=>open('learner')}><span>01 · LEARNER</span><b>Where should I start?</b><p>Goal + context → baseline → gap → recommended path → outcome</p></button>
         <button onClick={()=>open('advisor')}><span>02 · ADVISOR</span><b>How should I support this learner?</b><p>Shared reasoning + assisted journey + feedback signal</p></button>
         <button onClick={()=>open('portfolio')}><span>03 · PRODUCT PORT LEAD</span><b>What should OnDemand invest in next?</b><p>Portfolio + market intelligence + outcomes + decision governance</p></button>
       </div>
@@ -69,7 +68,7 @@ export default function App() {
         {mode==='advisor' && <AdvisorConsole/>}
         {mode==='portfolio' && <PortfolioOS/>}
       </main>
-      <footer>{PROTOTYPE_DISCLOSURE}</footer>
+      <footer>Prototype for interview discussion · Internal learner/commercial data are synthetic · Public-market signals require validation before business use</footer>
     </div>
   )
 }

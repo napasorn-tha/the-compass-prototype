@@ -207,6 +207,7 @@ function Support({setPage}:Pick<Props,'setPage'>) {
         <article><small>PLUS</small><b>Teacher Support</b><p>มีคนช่วยเมื่อเจอจุดติด</p></article>
         <article><small>PREMIUM</small><b>Advisor + Family</b><p>ดู journey และ decision ร่วมกับครอบครัว</p></article>
       </div>
+      <p className="data-note">Prototype support architecture — not official OnDemand pricing.</p>
       <div className="end"><button className="primary" onClick={()=>setPage('outcome')}>ดู Outcome Loop →</button></div>
     </section>
   )
