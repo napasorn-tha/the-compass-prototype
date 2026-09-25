@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { appSnapshot } from '../data/appSnapshot'
-import { competitorProfiles, customerVoiceRecords, decisionQueue } from '../data/v3'
+import { customerVoiceRecords } from '../data/v3'
+import { benchmarkMetrics, competitorBenchmarks, type BenchmarkLevel, type BenchmarkSubject } from '../data/competitorBenchmark'
 import '../portfolio-v4.css'
 
 type Workspace='performance'|'voice'|'competitor'|'journey'|'tracking'|'decisions'
@@ -67,19 +68,38 @@ function CustomerVoice(){
 }
 
 function CompetitorIntel(){
-  const levels=['Lower Secondary','Upper Secondary / TCAS'] as const
-  const subjects=['Math','Physics','Chemistry','Biology','English'] as const
-  const [level,setLevel]=useState<(typeof levels)[number]>('Lower Secondary')
-  const [subject,setSubject]=useState<(typeof subjects)[number]>('Physics')
-  const rows=competitorProfiles.filter(x=>x.level===level&&x.subject===subject)
+  const levels:BenchmarkLevel[]=['Lower Secondary','Upper Secondary / TCAS']
+  const subjects:BenchmarkSubject[]=['Math','Physics','Chemistry','Biology','English']
+  const [level,setLevel]=useState<BenchmarkLevel>('Lower Secondary')
+  const [subject,setSubject]=useState<BenchmarkSubject>('Math')
+  const rows=competitorBenchmarks.filter(x=>x.level===level&&x.subject===subject)
+  const ondemand=rows.find(x=>x.brand==='OnDemand')
+  const peers=rows.filter(x=>x.brand!=='OnDemand')
+  const deltas=benchmarkMetrics.map(metric=>{
+    const peerAvg=peers.length?peers.reduce((s,x)=>s+x.metrics[metric],0)/peers.length:0
+    return {metric,delta:(ondemand?.metrics[metric]||0)-peerAvg}
+  }).sort((a,b)=>b.delta-a.delta)
+  const advantage=deltas[0]
+  const gap=deltas[deltas.length-1]
   return <div className="p4-stack">
-    <Readout see={rows.length?`${subject} · ${level}: ${rows.length-1} relevant competitor references mapped alongside OnDemand.`:'No mapped competitor set for this filter yet.'} matters="Competitor view should compare the same learner job, not whole brands." decision="Round 2 will convert this into the horizontal benchmark view: OnDemand vs peers on price, breadth, foundation, practice, exam alignment and support."/>
-    <div className="p4-intro"><div><div className="eyebrow">COMPETITOR INTELLIGENCE</div><h2>Same job-to-be-done, same comparison set</h2></div></div>
-    <div className="p4-filterbox"><div><span>LEVEL</span>{levels.map(x=><button key={x} className={level===x?'active':''} onClick={()=>setLevel(x)}>{x}</button>)}</div><div><span>SUBJECT</span>{subjects.map(x=><button key={x} className={subject===x?'active':''} onClick={()=>setSubject(x)}>{x}</button>)}</div></div>
-    <div className="p4-competitors">{rows.map(x=><article className={x.brand==='OnDemand'?'owner':''} key={x.brand}><div className="p4-chead"><div><small>{x.type}</small><h3>{x.brand}</h3></div>{x.brand==='OnDemand'&&<span>FOCUS</span>}</div><div className="p4-visible"><span>VISIBLE OFFER</span><b>{x.visibleOffer}</b></div><div className="p4-pills">{x.positioning.map(p=><span key={p}>{p}</span>)}</div></article>)}</div>
+    <Readout
+      see={ondemand?`OnDemand strongest relative signal: ${advantage.metric} (${advantage.delta>=0?'+':''}${advantage.delta.toFixed(0)} vs peer avg). Biggest gap: ${gap.metric} (${gap.delta>=0?'+':''}${gap.delta.toFixed(0)}).`:'No benchmark set mapped.'}
+      matters="The comparison answers one question only: where does OnDemand have an advantage, and where is the competitive gap?"
+      decision={gap.delta<0?`Validate whether the ${gap.metric} gap affects package choice before building more products.`:'Protect the current advantage and keep monitoring the same learner job.'}
+    />
+    <div className="p4-intro"><div><div className="eyebrow">COMPETITOR INTELLIGENCE</div><h2>OnDemand vs relevant alternatives</h2><p>Horizontal benchmark by the same level + subject. OnDemand remains the reference point.</p></div></div>
+    <div className="p4-filterbox">
+      <div><span>LEVEL</span>{levels.map(x=><button key={x} className={level===x?'active':''} onClick={()=>setLevel(x)}>{x}</button>)}</div>
+      <div><span>SUBJECT</span>{subjects.map(x=><button key={x} className={subject===x?'active':''} onClick={()=>setSubject(x)}>{x}</button>)}</div>
+    </div>
+    <div className="benchmark-board">
+      {rows.map(row=><article className={row.brand==='OnDemand'?'benchmark-brand focus':'benchmark-brand'} key={row.brand}>
+        <div className="benchmark-title"><div><span>{row.brand==='OnDemand'?'ONDEMAND · FOCUS':'COMPETITOR'}</span><h3>{row.brand}</h3></div><b>{Math.round(benchmarkMetrics.reduce((s,m)=>s+row.metrics[m],0)/benchmarkMetrics.length)}</b></div>
+        <div className="benchmark-bars">{benchmarkMetrics.map(metric=><div className="benchmark-row" key={metric}><span>{metric}</span><i><em style={{width:row.metrics[metric]+'%'}}/></i><b>{row.metrics[metric]}</b></div>)}</div>
+      </article>)}
+    </div>
   </div>
 }
-
 function JourneyOutcomes(){
   const [segment,setSegment]=useState('ALL')
   const rows=segment==='ALL'?appSnapshot.segmentStats:appSnapshot.segmentStats.filter(x=>x.segment===segment)
@@ -93,25 +113,53 @@ function JourneyOutcomes(){
 
 function PackageTracking(){
   const [stage,setStage]=useState<'ALL'|'Primary'|'Lower Secondary'|'Upper Secondary'>('ALL')
+  const [selected,setSelected]=useState<string|null>(null)
   const packages=appSnapshot.packages.filter(x=>stage==='ALL'||x.lifeStage===stage)
+  const item=appSnapshot.packages.find(x=>x.packageId===selected)||packages[0]
+  const stat=item?appSnapshot.packageStats.find(x=>x.packageId===item.packageId):undefined
+  const sameRole=item?appSnapshot.packages.filter(x=>x.lifeStage===item.lifeStage&&x.track===item.track):[]
   return <div className="p4-stack">
-    <Readout see={`${packages.length} packages in the selected tracking view.`} matters="Tracking is reference intelligence: target, price, package role, overlap / bridge context — not the meeting homepage." decision="Use Tracking to assemble constraints and evidence; only active issues move to Decision Queue."/>
-    <div className="p4-intro"><div><div className="eyebrow">PACKAGE TRACKING</div><h2>All packages, supporting evidence</h2></div></div>
-    <div className="p4-filterbox"><div><span>LEVEL</span>{(['ALL','Primary','Lower Secondary','Upper Secondary'] as const).map(x=><button key={x} className={stage===x?'active':''} onClick={()=>setStage(x)}>{x}</button>)}</div></div>
-    <div className="p4-trackinggrid">{packages.map(p=>{const s=appSnapshot.packageStats.find(x=>x.packageId===p.packageId);return <article key={p.packageId}><span>{p.track}</span><h3>{p.name}</h3><p>{p.positioning}</p><div><b>฿{p.price.toLocaleString()}</b><small>{p.componentCount} components</small></div>{s&&<footer><span>{s.enrollments} enrollments</span><span>{s.acceptanceRate}% acceptance</span><span>{s.completion}% completion</span></footer>}</article>})}</div>
+    <Readout
+      see={item?`${item.name}: ${sameRole.length} package(s) share the same stage + track label.`:`${packages.length} packages in tracking.`}
+      matters={sameRole.length>1?'Same track label does not automatically mean cannibalization — target school, learner readiness and proposition can still separate the role.':'This package has a relatively clear role in the current package taxonomy.'}
+      decision={sameRole.length>1?'Check substitution / content overlap / recommendation collision before MERGE. If roles differ but choice is confusing, ROUTE BETTER.':'KEEP tracking; escalate only when performance or learner evidence creates an active issue.'}
+    />
+    <div className="p4-intro"><div><div className="eyebrow">PACKAGE TRACKING</div><h2>Reference layer before a decision</h2><p>All packages + constraints + possible overlap + cross-BU routing triggers.</p></div></div>
+    <div className="p4-filterbox"><div><span>LEVEL</span>{(['ALL','Primary','Lower Secondary','Upper Secondary'] as const).map(x=><button key={x} className={stage===x?'active':''} onClick={()=>{setStage(x);setSelected(null)}}>{x}</button>)}</div></div>
+    <div className="tracking-layout">
+      <div className="tracking-list">{packages.map(x=>{const s=appSnapshot.packageStats.find(v=>v.packageId===x.packageId);return <button className={(item?.packageId===x.packageId?'active ':'')+'tracking-row'} key={x.packageId} onClick={()=>setSelected(x.packageId)}><span><b>{x.name}</b><small>{x.track} · {x.lifeStage}</small></span><strong>{s?money(s.revenue):'—'}</strong></button>})}</div>
+      {item&&<article className="tracking-detail">
+        <div className="tracking-head"><div><span>SELECTED PACKAGE</span><h3>{item.name}</h3></div><b>฿{item.price.toLocaleString()}</b></div>
+        <p>{item.positioning}</p>
+        <div className="tracking-kpis"><div><span>Enrollments</span><b>{stat?.enrollments??0}</b></div><div><span>Acceptance</span><b>{stat?.acceptanceRate??0}%</b></div><div><span>Completion</span><b>{stat?.completion??0}%</b></div><div><span>Goal achieved</span><b>{stat?.goalAchieved??'—'}%</b></div></div>
+        <div className="tracking-block"><span>OVERLAP / ROLE CHECK</span><b>{sameRole.length>1?`${sameRole.length} packages share “${item.track}”`:'Clear single package role in this track'}</b>{sameRole.length>1&&<div>{sameRole.map(x=><i key={x.packageId}>{x.name}</i>)}</div>}</div>
+        <div className="tracking-block"><span>CROSS-BU ROUTING TRIGGERS</span><div className="bridge-tags">
+          {item.lifeStage==='Upper Secondary'&&<i>Admission navigation → TCASter</i>}
+          {item.lifeStage==='Upper Secondary'&&<i>International background → Ignite</i>}
+          {(item.track==='Foundation'||item.track==='School Exam')&&<i>English gap → Premier Prep</i>}
+          {!['Foundation','School Exam'].includes(item.track)&&item.lifeStage!=='Upper Secondary'&&<i>No default bridge — route only when learner need requires it</i>}
+        </div></div>
+      </article>}
+    </div>
   </div>
 }
-
 function Decisions(){
   const [chosen,setChosen]=useState<Record<string,string>>({})
   const actions=['KEEP','GROW','REPOSITION','ROUTE BETTER','REPACKAGE','MERGE','BRIDGE','HARVEST','EXIT']
+  const weakPackages=appSnapshot.packageStats.filter(x=>x.enrollments>=7&&(x.goalAchieved??100)<45).slice(0,3)
+  const provincial=appSnapshot.geographyStats.find(x=>x.cluster==='Provincial')!
+  const overlap=appSnapshot.packages.filter(x=>x.lifeStage==='Lower Secondary'&&x.track==='School Entrance')
+  const cases=[
+    ...weakPackages.map(x=>({id:x.packageId,type:'PACKAGE PERFORMANCE',title:x.packageName,evidence:`${x.enrollments} enrollments · ${x.completion}% completion · ${x.goalAchieved}% goal achieved`,why:'Outcome signal is weak enough to require diagnosis before growth.',system:'REVIEW / REPOSITION'})),
+    {id:'GEO-PROV',type:'GEOGRAPHY / DELIVERY',title:'Provincial demand is digitally heavy',evidence:`${provincial.learners} learners · ${provincial.anywhereShare}% Anywhere · ${provincial.branchPurchaseShare}% branch-purchase share`,why:'Expansion should not assume branch-first behavior outside Bangkok.',system:'ROUTE / CHANNEL TEST'},
+    {id:'LSEC-ENTRANCE',type:'OVERLAP REVIEW',title:'Lower-secondary school entrance paths',evidence:`${overlap.length} packages share School Entrance but target different schools / propositions.`,why:'Do not merge based on count alone; check recommendation collision and customer confusion.',system:'ROUTE BETTER FIRST'},
+  ]
   return <div className="p4-stack">
-    <Readout see={decisionQueue.length+' active prototype signals are waiting for a portfolio decision.'} matters="Decision Queue is intentionally smaller than Package Tracking." decision="Decide only when performance + learner + market evidence is sufficient."/>
-    <div className="p4-intro"><div><div className="eyebrow">DECISION QUEUE</div><h2>Only cases that need a decision</h2></div></div>
-    <div className="p4-queue">{decisionQueue.map(q=><article key={q.id}><div className="p4-qhead"><span>{q.classification}</span><h3>{q.title}</h3><b>{q.recommendation}</b></div><div className="p4-evidence"><span>EVIDENCE</span><p>{q.evidence}</p></div><div className="p4-why"><span>WHY</span><p>{q.why}</p></div><div className="p4-actions">{actions.map(a=><button key={a} className={chosen[q.id]===a?'active':''} onClick={()=>setChosen({...chosen,[q.id]:a})}>{a}</button>)}</div></article>)}</div>
+    <Readout see={cases.length+' active cases meet a review trigger in the current snapshot.'} matters="Decision Queue contains only issues with an observable trigger; Package Tracking still contains the full portfolio." decision="Choose an action, owner and review window only after the evidence is sufficient."/>
+    <div className="p4-intro"><div><div className="eyebrow">DECISION QUEUE</div><h2>Active cases only</h2><p>Performance / geography / overlap signals that need a Product Port Lead decision.</p></div></div>
+    <div className="p4-queue">{cases.map(q=><article key={q.id}><div className="p4-qhead"><span>{q.type}</span><h3>{q.title}</h3><b>{q.system}</b></div><div className="p4-evidence"><span>EVIDENCE</span><p>{q.evidence}</p></div><div className="p4-why"><span>WHY</span><p>{q.why}</p></div><div className="p4-actions">{actions.map(a=><button key={a} className={chosen[q.id]===a?'active':''} onClick={()=>setChosen({...chosen,[q.id]:a})}>{a}</button>)}</div>{chosen[q.id]&&<div className="p4-chosen">Decision: <b>{chosen[q.id]}</b> · assign owner + review date</div>}</article>)}</div>
   </div>
 }
-
 export default function PortfolioOS(){
   const [workspace,setWorkspace]=useState<Workspace>('performance')
   const content=useMemo(()=>{
