@@ -1,57 +1,41 @@
 # From Catalog to Compass — Product Portfolio Operating System
 
-Interview prototype for a **Product Port Lead – Deputy Department Manager, OnDemand** discussion.
+Interview prototype for **Product Port Lead – Deputy Department Manager, OnDemand**.
 
-## What changed in V3
+## Portfolio OS V4
 
-The prototype now has three layers:
+The Portfolio OS now starts from the **actual public catalog architecture**, then overlays learner need states.
 
-1. **Learner Journey**
-   - Goal & context
-   - Baseline check
-   - Gap map
-   - Recommended path
-   - Support ladder
-   - Outcome feedback
+Core logic:
 
-2. **Advisor**
-   - Shared reasoning
-   - Assisted journey
-   - Advisor / parent support
-   - Feedback as a market signal
+1. Understand catalog structure
+2. Overlay learner needs
+3. Separate:
+   - true product overlap
+   - discovery / naming confusion
+   - true portfolio gap
+4. Route journeys through OnDemand or LEARN ecosystem capabilities
+5. Convert evidence into a portfolio decision
 
-3. **Portfolio Operating System**
-   - Portfolio Map (Life stage × Need state)
-   - Product Performance
-   - Customer Voice
-   - Competitor Intelligence
-   - Journey & Outcomes
-   - Decision Queue
-   - Growth & Ecosystem collaboration
+The public catalog snapshot includes multiple layers visible on the OnDemand storefront:
+- core packs
+- topic modules
+- school-specific packs
+- TCAS packs
+- +Upskill bundles
+- standalone Upskill
+- multi-subject / faculty bundles
+
+Product names / SKU labels / public prices are mapped from current public storefront pages. The snapshot is broader than the previous prototype but is **not presented as a complete internal SKU master**.
 
 ## Data note
 
-Internal learner and commercial data are synthetic prototype data.
+Learner, commercial, margin, retention and customer-comment counts are synthetic prototype data.
 
-The synthetic cohort is designed for interaction testing and is conceptually calibrated using historical public education benchmarks such as national O-NET / A-Level statistics where applicable. It is not school-level performance data.
+Synthetic score distributions are conceptually calibrated using public historical national education benchmarks such as O-NET / A-Level where applicable. They are not school-level performance claims.
 
-Public product / market / competitor signals should be validated against reproducible public sources before being used as business findings.
+Competitor and customer-perception views are hypothesis / research structures unless backed by reproducible public or internal evidence.
 
-## Scope note
+## Scope
 
-The Product Port Lead prototype treats **OnDemand** as the owned portfolio.
-
-Ignite, TCASter, Premier Prep and other LEARN businesses are represented as **partner BUs / cross-BU collaboration opportunities**, not as portfolios managed by the OnDemand Product Port Lead.
-
-## Run
-
-```bash
-npm install
-npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-```
+The prototype treats OnDemand as the owned portfolio. Cross-BU brands appear only when a learner need triggers a potential collaboration path.
