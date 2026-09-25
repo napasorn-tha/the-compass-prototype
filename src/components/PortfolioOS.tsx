@@ -23,19 +23,41 @@ const workspaces: {id:Workspace;label:string}[] = [
   {id:'decisions',label:'Decision Queue'},
 ]
 
-function Readout({see,matters,decision}:{see:string;matters:string;decision:string}) {
+function Readout({see,matters,decision,onDecision}:{see:string;matters:string;decision:string;onDecision?:()=>void}) {
   return <div className="p4-readout">
     <div><span>WHAT WE SEE</span><b>{see}</b></div>
     <div><span>WHY IT MATTERS</span><b>{matters}</b></div>
-    <div className="p4-decision"><span>NEXT PORTFOLIO MOVE</span><b>{decision}</b></div>
+    <div className="p4-decision"><span>NEXT PORTFOLIO MOVE</span><b>{decision}</b>{onDecision&&<button className="p4-decision-action" onClick={onDecision}>Review in Decision Queue →</button>}</div>
   </div>
 }
 
 
-function PortfolioPerformance() {
+const CM_ASSUMPTIONS = {
+  delivery: { Anywhere:0.12, Branch:0.30, Hybrid:0.21 },
+  channel: { Website:0.03, Advisor:0.08, Branch:0.10, 'Campaign / Event':0.06 },
+  support: { 'Free / Entry':0.02, Core:0.04, Plus:0.08, Premium:0.16 },
+} as const
+
+function estimateContributionMargin() {
+  const paid=appSnapshot.learnerCases.filter(x=>x.accepted && x.purchasePrice>0)
+  const revenue=paid.reduce((sum,x)=>sum+x.purchasePrice,0)
+  const contribution=paid.reduce((sum,x)=>{
+    const delivery=CM_ASSUMPTIONS.delivery[x.learningMode as keyof typeof CM_ASSUMPTIONS.delivery] ?? 0.20
+    const channel=CM_ASSUMPTIONS.channel[x.purchaseChannel as keyof typeof CM_ASSUMPTIONS.channel] ?? 0.06
+    const support=CM_ASSUMPTIONS.support[x.supportTier as keyof typeof CM_ASSUMPTIONS.support] ?? 0.08
+    return sum + x.purchasePrice * Math.max(0,1-delivery-channel-support)
+  },0)
+  return {
+    amount:Math.round(contribution),
+    rate:revenue?Math.round(contribution/revenue*100):0,
+  }
+}
+
+function PortfolioPerformance({openDecisions}:{openDecisions:()=>void}) {
   const [lens,setLens]=useState<'Segment'|'Package'|'Geography'|'Delivery'>('Segment')
   const o=appSnapshot.overall
   const thb=(n:number)=>'฿'+n.toLocaleString()
+  const cm=estimateContributionMargin()
 
   const rows = lens==='Segment'
     ? appSnapshot.segmentStats.map(x=>({name:x.segment,detail:x.learners+' learners',revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
@@ -45,30 +67,49 @@ function PortfolioPerformance() {
         ? appSnapshot.geographyStats.map(x=>({name:x.cluster,detail:x.learners+' learners',revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
         : appSnapshot.deliveryStats.map(x=>({name:x.mode,detail:'delivery mode',revenue:x.revenue,enrollments:x.enrollments,aov:x.aov,completion:x.completion,outcome:x.goalAchieved}))
 
-  const topPackage=appSnapshot.packageStats[0]
+  const topPackage=[...appSnapshot.packageStats].sort((a,b)=>b.revenue-a.revenue)[0]
   const topGeo=[...appSnapshot.geographyStats].sort((a,b)=>b.revenue-a.revenue)[0]
 
-  return <div className="p4-stack">
-    <Readout
-      see={`${o.enrollments} enrollments generate ${thb(o.revenue)} in the final mock snapshot; ${topPackage.packageName} is the largest package by revenue.`}
-      matters={`${topGeo.cluster} is the largest geography by revenue, while Anywhere is the largest delivery mode by enrollment.`}
-      decision="Use the lenses below to isolate the signal before moving a case into Decision Queue."
-    />
+  const salesChannels=Object.values(appSnapshot.learnerCases.filter(x=>x.accepted).reduce((acc,item)=>{
+    const key=item.purchaseChannel || 'Unknown'
+    const current=acc[key] || {name:key,enrollments:0,revenue:0,branches:new Set<string>()}
+    current.enrollments+=1
+    current.revenue+=item.purchasePrice
+    if(item.branchName) current.branches.add(item.branchName)
+    acc[key]=current
+    return acc
+  },{} as Record<string,{name:string;enrollments:number;revenue:number;branches:Set<string>}>))
+    .sort((a,b)=>b.revenue-a.revenue)
 
+  const demandProvinces=Object.values(appSnapshot.learnerCases.reduce((acc,item)=>{
+    const key=item.province || item.region
+    const current=acc[key] || {name:key,learners:0,region:item.region}
+    current.learners+=1
+    acc[key]=current
+    return acc
+  },{} as Record<string,{name:string;learners:number;region:string}>))
+    .sort((a,b)=>b.learners-a.learners)
+    .slice(0,6)
+
+  return <div className="p4-stack">
     <div className="p4-intro">
-      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Current portfolio health — one meeting view</h2><p>ตัวเลขชุดเดียวจาก final connected snapshot แล้ว drill ด้วย <b>Segment / Package / Geography / Delivery</b></p></div>
-      <div className="p4-kpi"><span>FINAL MOCK SNAPSHOT</span><b>{o.learners}</b><small>connected learners</small></div>
+      <div><div className="eyebrow">PORTFOLIO PERFORMANCE</div><h2>Meeting cockpit — evidence first, decision last</h2><p>What happened → Where → Why → So what → Decision</p></div>
+      <div className="p4-kpi"><span>CONNECTED SNAPSHOT</span><b>{o.learners}</b><small>learners in shared spine</small></div>
     </div>
 
+    <div className="p4-story-label"><span>01 · WHAT HAPPENED?</span><b>Business performance first</b></div>
     <div className="p4-metrics">
-      <article><span>Revenue</span><b>{thb(o.revenue)}</b><small>enrollment revenue in final mock</small></article>
+      <article><span>Revenue</span><b>{thb(o.revenue)}</b><small>connected enrollment revenue</small></article>
       <article><span>Enrollments</span><b>{o.enrollments}</b><small>connected enrollment records</small></article>
       <article><span>Rec → Paid</span><b>{o.recToPaid}%</b><small>recommendation acceptance / paid proxy</small></article>
+      <article className="p4-estimate"><span>Est. Contribution Margin</span><b>{cm.rate}%</b><small>{thb(cm.amount)} · directional estimate</small><em title="Directional estimate based on delivery mode, channel and support intensity. Not accounting actuals.">assumption-based ⓘ</em></article>
       <article><span>AOV</span><b>{thb(o.aov)}</b><small>average order value</small></article>
       <article><span>Learning Outcome</span><b>{o.goalAchieved}%</b><small>goal achieved among available outcomes</small></article>
-      <article><span>Contribution Margin</span><b>—</b><small>cost data not available in final mock</small></article>
     </div>
 
+    <div className="p4-estimate-note">EST. CONTRIBUTION MARGIN · Directional estimate based on delivery mode, channel and support intensity. Not accounting actuals.</div>
+
+    <div className="p4-story-label"><span>02 · WHERE?</span><b>Change the lens before interpreting the signal</b></div>
     <div className="p4-filterline">
       {(['Segment','Package','Geography','Delivery'] as const).map(x=><button className={lens===x?'active':''} onClick={()=>setLens(x)} key={x}>{x}</button>)}
     </div>
@@ -78,13 +119,29 @@ function PortfolioPerformance() {
       {rows.map(row=><div className="p4-performance-row" key={row.name}>
         <div><b>{row.name}</b><small>{row.detail}</small></div>
         <span>{thb(row.revenue)}</span><span>{row.enrollments}</span><span>{thb(row.aov)}</span><span>{row.completion}%</span><span>{row.outcome}%</span>
-        <strong>{row.outcome>=65?'PROTECT / LEARN':row.outcome<45?'REVIEW':'WATCH'}</strong>
+        <strong className={row.outcome>=65?'signal-healthy':row.outcome<45?'signal-priority':'signal-watch'}>{row.outcome>=65?'HEALTHY / LEARN':row.outcome<45?'PRIORITY':'WATCH'}</strong>
       </div>)}
     </div>
 
-    {lens==='Geography' && <div className="p4-performance-split">
-      {appSnapshot.geographyStats.map(x=><article key={x.cluster}><span>{x.cluster.toUpperCase()}</span><h3>{x.learners} learners</h3><b>{x.anywhereShare}% Anywhere share</b><p>{x.branchPurchaseShare}% branch-purchase share · {x.completion}% completion</p></article>)}
+    {lens==='Geography' && <div className="p4-geo-dual">
+      <article>
+        <div className="p4-geo-head"><span>WHERE DEMAND COMES FROM</span><b>Learner geography</b></div>
+        <div className="p4-geo-clusters">{appSnapshot.geographyStats.map(x=><div key={x.cluster}><b>{x.cluster}</b><span>{x.learners} learners</span><small>{x.anywhereShare}% Anywhere preference · {x.completion}% completion</small></div>)}</div>
+        <div className="p4-geo-detail"><span>TOP PROVINCES IN SNAPSHOT</span>{demandProvinces.map(x=><b key={x.name}>{x.name} · {x.learners}</b>)}</div>
+      </article>
+      <article>
+        <div className="p4-geo-head"><span>WHERE SALES HAPPEN</span><b>Purchase channel / branch evidence</b></div>
+        <div className="p4-geo-clusters">{salesChannels.map(x=><div key={x.name}><b>{x.name}</b><span>{x.enrollments} enrollments · {thb(x.revenue)}</span><small>{x.branches.size?Array.from(x.branches).slice(0,3).join(' · '):'No branch assigned — keep as non-branch sale'}</small></div>)}</div>
+      </article>
     </div>}
+
+    <div className="p4-story-label"><span>03–05 · WHY? → SO WHAT? → DECISION</span><b>Interpret only after the evidence is visible</b></div>
+    <Readout
+      see={`${o.enrollments} enrollments generate ${thb(o.revenue)}; ${topPackage?.packageName || 'top package'} is the largest package by revenue in the connected snapshot.`}
+      matters={`${topGeo?.cluster || 'Top geography'} is the largest geography by revenue, while the delivery mix shows where demand and purchase behavior diverge.`}
+      decision="Use the selected lens to isolate the driver, then move the evidence into Decision Queue for a human portfolio decision."
+      onDecision={openDecisions}
+    />
   </div>
 }
 
@@ -298,7 +355,7 @@ function Decisions() {
 export default function PortfolioOS(){
   const [workspace,setWorkspace]=useState<Workspace>('performance')
   const content=useMemo(()=>{
-    if(workspace==='performance')return <PortfolioPerformance/>
+    if(workspace==='performance')return <PortfolioPerformance openDecisions={()=>setWorkspace('decisions')}/>
     if(workspace==='voice')return <CustomerVoice/>
     if(workspace==='competitor')return <CompetitorIntel/>
     if(workspace==='journey')return <JourneyOutcomes/>
@@ -308,9 +365,18 @@ export default function PortfolioOS(){
 
   return <section className="page portfolio-page">
     <div className="section-head">
-      <div><div className="eyebrow">PRODUCT PORT LEAD · DEPUTY DEPARTMENT MANAGER</div><h1 className="section-title">Portfolio Operating System</h1><p className="lead">Current performance → diagnose customer & market signals → validate outcomes → track package constraints / bridges → decide.</p></div>
+      <div>
+        <div className="eyebrow">03 · PORTFOLIO OS / AGGREGATED MANAGEMENT LAYER</div>
+        <h1 className="section-title">Portfolio Operating System</h1>
+        <p className="lead">What should the business change next? Aggregate learner, commercial and market signals into evidence-backed portfolio decisions.</p>
+      </div>
       <div className="section-number">03</div>
     </div>
+
+    <div className="portfolio-progression">
+      <span>PERFORMANCE</span><i>→</i><span>CUSTOMER / MARKET SIGNALS</span><i>→</i><span>OUTCOME EVIDENCE</span><i>→</i><span>PACKAGE DIAGNOSIS</span><i>→</i><span>DECISION</span>
+    </div>
+
     <div className="workspace-tabs">{workspaces.map(w=><button className={workspace===w.id?'active':''} onClick={()=>setWorkspace(w.id)} key={w.id}>{w.label}</button>)}</div>
     <div className="workspace-shell">{content}</div>
   </section>
