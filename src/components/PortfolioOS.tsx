@@ -148,7 +148,7 @@ function CustomerVoice() {
 
     <div className="p4-themegrid">
       {selected.themes.map(([theme,count,detail])=><article key={String(theme)}>
-        <span>{count} mentions</span>
+        <span>{count} signals</span>
         <b>{theme}</b>
         <p>{detail}</p>
         <div><i style={{width:(Number(count)/selected.sample*100)+'%'}}/></div>
@@ -162,11 +162,18 @@ function CustomerVoice() {
 }
 
 function CompetitorIntel() {
-  const subjects = ['Math','Physics','Chemistry','Biology','English'] as const
-  const [subject,setSubject] = useState<(typeof subjects)[number]>('Physics')
-  const levels = ['Lower Secondary','Upper Secondary / TCAS'] as const
+  const levels = ['Primary','Lower Secondary','Upper Secondary / TCAS'] as const
   const [level,setLevel] = useState<(typeof levels)[number]>('Upper Secondary / TCAS')
-  const rows = competitorProfiles.filter(x=>x.subject===subject && x.level===level)
+  const subjectOptions = Array.from(new Set(competitorProfiles.filter(x=>x.level===level).map(x=>x.subject)))
+  const [subject,setSubject] = useState('Physics')
+  const safeSubject = subjectOptions.includes(subject) ? subject : subjectOptions[0]
+  const rows = competitorProfiles.filter(x=>x.subject===safeSubject && x.level===level)
+
+  const switchLevel=(next:(typeof levels)[number])=>{
+    setLevel(next)
+    const first=competitorProfiles.find(x=>x.level===next)
+    if(first) setSubject(first.subject)
+  }
 
   const points=rows.map((item,index)=>{
     if(item.brand==='OnDemand') return {...item,x:66,y:78}
@@ -180,8 +187,8 @@ function CompetitorIntel() {
     </div>
 
     <div className="p4-filterbox minimal">
-      <div><span>LEVEL</span>{levels.map(x=><button className={level===x?'active':''} onClick={()=>setLevel(x)} key={x}>{x}</button>)}</div>
-      <div><span>SUBJECT</span>{subjects.map(x=><button className={subject===x?'active':''} onClick={()=>setSubject(x)} key={x}>{x}</button>)}</div>
+      <div><span>LEVEL</span>{levels.map(x=><button className={level===x?'active':''} onClick={()=>switchLevel(x)} key={x}>{x}</button>)}</div>
+      <div><span>SUBJECT</span>{subjectOptions.map(x=><button className={safeSubject===x?'active':''} onClick={()=>setSubject(x)} key={x}>{x}</button>)}</div>
     </div>
 
     <div className="p4-market-grid">
@@ -278,7 +285,7 @@ function PackageTracking() {
               <div className="p4-layer">{item.layer}</div>
               <div className="p4-offermain"><b>{item.name}</b><small>{item.price ? '฿'+item.price.toLocaleString() : ''}</small></div>
               <div className="p4-issue">{item.issue==='CLEAR_ROLE'?'CLEAR':item.issue==='DISCOVERY_CONFUSION'?'CLARIFY':'REVIEW'}</div>
-              <a href={item.sourceUrl} target="_blank" rel="noreferrer">↗</a>
+              {item.sourceUrl ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">↗</a> : <span/>}
             </div>)}
           </div>
         </article>
@@ -339,13 +346,14 @@ function GrowthAndSynergy() {
 }
 
 function Decisions() {
-  const ownerOptions=['PM — Portfolio','PM — Journey','PM — Market & Data','PM — Growth & Ecosystem','PM — TCAS','PM — Lower Secondary']
+  const ownerOptions=['PM — Portfolio','PM — Journey','PM — Market & Data','PM — Growth & Ecosystem','PM — Primary','PM — Lower Secondary','PM — TCAS']
   const defaultOwners:Record<string,string>={
     Q01:'PM — Portfolio',
     Q02:'PM — Portfolio',
     Q03:'PM — Journey',
     Q04:'PM — Portfolio',
     Q05:'PM — Growth & Ecosystem',
+    Q06:'PM — Primary',
   }
   const defaultDirections:Record<string,string>={
     Q01:'Clarify cohort vs content version before changing the SKU structure.',
@@ -353,6 +361,7 @@ function Decisions() {
     Q03:'Keep modular content. Simplify the learner entry point.',
     Q04:'Simplify the choice first; protect useful backend variants.',
     Q05:'Pilot the cross-company path before building a standalone SKU.',
+    Q06:'Use baseline to route Primary learners into Foundation, School Performance or Competitive paths.',
   }
   const subActions={
     KEEP:['Protect','Grow','Cross-sell'],
