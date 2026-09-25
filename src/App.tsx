@@ -12,7 +12,8 @@ const studentNav: { id: StudentPage; label: string }[] = [
   { id: 'goal', label: 'Goal & Context' },
   { id: 'baseline', label: 'Baseline' },
   { id: 'gap', label: 'Gap Map' },
-  { id: 'path', label: 'Path' },
+  { id: 'path', label: 'Recommended Path' },
+  { id: 'support', label: 'Support' },
   { id: 'outcome', label: 'Outcome' },
 ]
 
@@ -23,17 +24,60 @@ function Home({open}:{open:(mode:Mode)=>void}) {
         <div>
           <div className="eyebrow">ONDEMAND PRODUCT PORTFOLIO PROTOTYPE</div>
           <h1>From Catalog<br/>to <span>Compass</span></h1>
-          <p>One portfolio. Different learner needs.<br/>One decision engine. Multiple journeys.</p>
-          <div className="actions"><button className="primary" onClick={()=>open('learner')}>Explore Learner Journey</button><button className="secondary" onClick={()=>open('portfolio')}>Open Portfolio OS</button></div>
+          <p>One learner intelligence loop.<br/>Three interfaces into the same system.</p>
+          <div className="actions">
+            <button className="primary" onClick={()=>open('learner')}>Explore Learner Journey</button>
+            <button className="secondary" onClick={()=>open('portfolio')}>Open Portfolio OS</button>
+          </div>
         </div>
         <div className="home-number">00</div>
       </div>
-      <div className="three-layer">
-        <button onClick={()=>open('learner')}><span>01 · LEARNER</span><b>Where should I start?</b><p>Goal + context → baseline → gap → Top 3 package recommendation → outcome</p></button>
-        <button onClick={()=>open('advisor')}><span>02 · ADVISOR</span><b>How should I support this learner?</b><p>Shared reasoning + assisted journey + feedback signal</p></button>
-        <button onClick={()=>open('portfolio')}><span>03 · PRODUCT PORT LEAD</span><b>What should OnDemand invest in next?</b><p>Portfolio + market intelligence + outcomes + decision governance</p></button>
+
+      <div className="home-system-title">
+        <span>ONE COMPASS</span>
+        <b>THREE USER LENSES</b>
+        <p>Learner, Advisor และ Product Lead ไม่ได้ต่อคิวกันเป็น workflow — ทุกคนกำลังอ่านและเขียนกลับเข้า learner intelligence loop เดียวกัน</p>
       </div>
-      <div className="home-principle"><b>CATALOG</b><span>เรามีอะไรขาย?</span><i>→</i><b>COMPASS</b><span>นักเรียนคนนี้ควรไปทางไหน?</span><i>→</i><b>PORTFOLIO OS</b><span>ควรลงทุนอะไรต่อ เพื่อพานักเรียนถึงเป้า?</span></div>
+
+      <div className="three-layer">
+        <button onClick={()=>open('learner')}>
+          <span>01 · LEARNER</span>
+          <b>What should I do next?</b>
+          <p>Goal → Baseline → Gap → Path → Support → Outcome</p>
+        </button>
+        <button onClick={()=>open('advisor')}>
+          <span>02 · ADVISOR</span>
+          <b>Where does this learner need human support?</b>
+          <p>Same learner context + shared reasoning + next best action</p>
+        </button>
+        <button onClick={()=>open('portfolio')}>
+          <span>03 · PORTFOLIO OS</span>
+          <b>What should the business change next?</b>
+          <p>Aggregate learner, commercial and market signals → portfolio decisions</p>
+        </button>
+      </div>
+
+      <div className="shared-loop">
+        <div><span>01</span><b>Need</b></div>
+        <i>→</i>
+        <div><span>02</span><b>Compass</b></div>
+        <i>→</i>
+        <div><span>03</span><b>Path</b></div>
+        <i>→</i>
+        <div><span>04</span><b>Learn</b></div>
+        <i>→</i>
+        <div><span>05</span><b>Outcome</b></div>
+        <i>→</i>
+        <div><span>06</span><b>Portfolio Learning</b></div>
+        <i>→</i>
+        <div><span>07</span><b>Better Compass</b></div>
+      </div>
+
+      <div className="home-principle">
+        <b>CATALOG</b><span>เรามีอะไรขาย?</span><i>→</i>
+        <b>COMPASS</b><span>นักเรียนคนนี้ควรไปทางไหน?</span><i>→</i>
+        <b>PORTFOLIO OS</b><span>เราควรเปลี่ยนอะไร เพื่อให้ recommendation รอบถัดไปดีขึ้น?</span>
+      </div>
     </section>
   )
 }
